@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Full Width Video.js Player with Horizontal Scroll Server Buttons</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Video.js CSS -->
+  <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet" />
+
+  <!-- FontAwesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous"
+  />
+
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      background-color: black;
+      font-family: 'Inter', sans-serif;
+      color: #eee;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+    }
+
+    /* Video player */
+    .video-js {
+      width: 100vw !important;
+      height: calc(100vw * 9 / 16) !important;
+      max-height: 90vh !important;
+      max-width: 100vw !important;
+      border-radius: 6px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+      background: black;
+      flex-shrink: 0;
+      position: relative; /* Added for logo positioning */
+    }
+
+    /* Logo overlay */
+    .vjs-logo-overlay {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 100;
+    }
+    .vjs-logo-overlay.visible {
+      opacity: 0.8; /* Slightly transparent for elegance */
+    }
+    .vjs-logo-overlay img {
+      width: 100px; /* Adjust based on your logo size */
+      height: auto;
+    }
+
+    /* Server buttons container - horizontal scroll */
+    .server-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      width: 100%;
+      max-width: 900px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #1db954 transparent;
+    }
+
+    /* Scrollbar style for Webkit browsers */
+    .server-buttons::-webkit-scrollbar {
+      height: 8px;
+    }
+    .server-buttons::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .server-buttons::-webkit-scrollbar-thumb {
+      background-color: #1db954;
+      border-radius: 4px;
+    }
+
+    /* Individual server button */
+    .server-button {
+      background-color: #222;
+      border: 2px solid #444;
+      padding: 12px 30px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      color: #bbb;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+      user-select: none;
+      white-space: nowrap;
+      min-width: 120px;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .server-button:hover {
+      background-color: #333;
+      border-color: #1db954;
+      color: #1db954;
+    }
+
+    .server-button.selected {
+      background-color: #1db954;
+      border-color: #1db954;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .icon-check {
+      display: none;
+      color: white;
+      font-size: 18px;
+    }
+
+    .server-button.selected .icon-check {
+      display: inline-block;
+    }
+
+    /* Description image */
+    .description-image {
+      margin-top: 30px;
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+    }
+    .description-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .server-button {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 100px;
+      }
+      .description-image {
+        margin-top: 20px;
+      }
+      .vjs-logo-overlay img {
+        width: 80px; /* Smaller logo on mobile */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <video
+    id="my-video"
+    class="video-js vjs-big-play-centered"
+    controls
+    preload="auto"
+    playsinline
+    webkit-playsinline
+    x5-playsinline
+    data-setup="{}"
+  >
+    <source src="https://live.tsports.com/mobile_hls/tsports_live_1/playlist.m3u8" type="application/x-mpegURL" />
+    Sorry, your browser doesn't support embedded videos.
+  </video>
+  <div class="vjs-logo-overlay">
+    <img src="https://i.postimg.cc/6QP5JMs5/IMG-20250608-233517-prev-ui.png" alt="Your Logo" />
+  </div>
+
+  <div class="server-buttons" role="tablist" aria-label="Video servers">
+    <div class="server-button selected" data-src="https://live.tsports.com/mobile_hls/tsports_live_1/playlist.m3u8" role="tab" tabindex="0">
+      <i class="fa-solid fa-check icon-check" aria-hidden="true"></i> Server 1
+    </div>
+    <div class="server-button" data-src="https://example.com/server2.m3u8" role="tab" tabindex="-1">
+      <i class="fa-solid fa-check icon-check" aria-hidden="true"></i> Server 2
+    </div>
+    <div class="server-button" data-src="https://example.com/server3.m3u8" role="tab" tabindex="-1">
+      <i class="fa-solid fa-check icon-check" aria-hidden="true"></i> Server 3
+    </div>
+  </div>
+
+  <div class="description-image">
+    <img src="https://i.postimg.cc/qMSD2sgF/FB-IMG-1749404438053.jpg" alt="Description Image" />
+  </div>
+
+  <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
+  <script>
+    const player = videojs('my-video');
+    const buttons = document.querySelectorAll('.server-button');
+    const logoOverlay = document.querySelector('.vjs-logo-overlay');
+
+    buttons.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        // Remove 'selected' class and reset tabindex from all buttons
+        buttons.forEach(b => {
+          b.classList.remove('selected');
+          b.setAttribute('tabindex', '-1');
+        });
+        // Add 'selected' class and set tabindex to current button
+        btn.classList.add('selected');
+        btn.setAttribute('tabindex', '0');
+
+        // Update video source
+        const newSrc = btn.getAttribute('data-src');
+        player.src({ src: newSrc, type: 'application/x-mpegURL' });
+        player.load(); // Ensure the new source is loaded
+        player.play().catch(error => {
+          console.log('Playback failed:', error);
+        });
+      });
+
+      btn.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          buttons[(i + 1) % buttons.length].focus();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          buttons[(i - 1 + buttons.length) % buttons.length].focus();
+        }
+      });
+    });
+
+    // Show logo after 4 seconds when video plays
+    player.on('play', () => {
+      setTimeout(() => {
+        logoOverlay.classList.add('visible');
+      }, 1000);
+    });
+
+    // Hide logo when video pauses or ends
+    player.on(['pause', 'ended'], () => {
+      logoOverlay.classList.remove('visible');
+    });
+
+    // Fix player size on window resize
+    function resizePlayer() {
+      player.width(window.innerWidth);
+      player.height(window.innerWidth * 9 / 16);
+    }
+    window.addEventListener('resize', resizePlayer);
+    window.addEventListener('load', resizePlayer);
+  </script>
+</body>
+</html>
