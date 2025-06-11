@@ -1,51 +1,194 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <title>৩টি বাটন</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ডাইনামিক পেজ সহ ১২টি বাটন</title>
+    <style>
+        /* --- বেসিক স্টাইল --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ebee;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-    h2 {
-      margin-bottom: 30px;
-      color: #333;
-    }
+        /* --- কন্টেইনার --- */
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
 
-    .button {
-      background-color: #007BFF;
-      color: white;
-      padding: 15px 30px;
-      margin: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 18px;
-      transition: 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-    }
+        /* --- বাটনের গ্রিড --- */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
 
-    .button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+        /* --- প্রতিটি বাটন --- */
+        .custom-button {
+            padding: 18px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #2196F3, #0d6efd);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+        }
+
+        .custom-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        /* --- কনটেন্ট দেখানোর জায়গা --- */
+        .content-display {
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            margin-top: 30px;
+        }
+
+        .content-display h1 {
+            color: #0d6efd;
+            margin-top: 0;
+        }
+
+        .content-display p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        
+        #back-button {
+             background: #6c757d;
+             margin-top: 20px;
+        }
+        #back-button:hover {
+            background: #5a6268;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* --- লুকানোর জন্য ক্লাস --- */
+        .hidden {
+            display: none;
+        }
+
+        /* --- রেসপন্সিভ ডিজাইন --- */
+        @media (max-width: 768px) {
+            .button-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 576px) {
+            .button-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <h2>আপনার পছন্দের ওয়েবসাইটে যান:</h2>
+    <div class="container">
+        <!-- ১২টি বাটনের গ্রিড -->
+        <div id="button-container" class="button-grid">
+            <button class="custom-button" data-page="1">পেজ ১</button>
+            <button class="custom-button" data-page="2">পেজ ২</button>
+            <button class="custom-button" data-page="3">পেজ ৩</button>
+            <button class="custom-button" data-page="4">পেজ ৪</button>
+            <button class="custom-button" data-page="5">পেজ ৫</button>
+            <button class="custom-button" data-page="6">পেজ ৬</button>
+            <button class="custom-button" data-page="7">পেজ ৭</button>
+            <button class="custom-button" data-page="8">পেজ ৮</button>
+            <button class="custom-button" data-page="9">পেজ ৯</button>
+            <button class="custom-button" data-page="10">পেজ ১০</button>
+            <button class="custom-button" data-page="11">পেজ ১১</button>
+            <button class="custom-button" data-page="12">পেজ ১২</button>
+        </div>
 
-  <a class="button" href="1.html" target="_blank">গুগল</a>
-  <a class="button" href="2.html" target="_blank">ইউটিউব</a>
-  <a class="button" href="https://www.facebook.com" target="_blank">ফেসবুক</a>
+        <!-- কনটেন্ট দেখানোর জন্য নির্দিষ্ট জায়গা (ডিফল্টভাবে লুকানো থাকবে) -->
+        <div id="content-container" class="content-display hidden">
+            <h1 id="content-title"></h1>
+            <p id="content-body"></p>
+            <button id="back-button" class="custom-button">মূল মেন্যুতে ফিরে যান</button>
+        </div>
+    </div>
+
+<script>
+    // --- জাভাস্ক্রিপ্ট অংশ ---
+
+    // ১. ১২টি পেজের জন্য কনটেন্ট একটি অ্যারেতে সংরক্ষণ করা হলো
+    const pageData = {
+        1: { title: "প্রথম পেজ", content: "এটি প্রথম পেজের বিস্তারিত কনটেন্ট। এখানে আপনি আপনার লেখা, ছবি বা অন্য কিছু যোগ করতে পারেন।" },
+        2: { title: "দ্বিতীয় পেজ", content: "এটি দ্বিতীয় পেজের বিস্তারিত কনটেন্ট। স্বাগতম!" },
+        3: { title: "তৃতীয় পেজ", content: "এটি তৃতীয় পেজের কনটেন্ট। এখানে কিছু গুরুত্বপূর্ণ তথ্য থাকতে পারে।" },
+        4: { title: "চতুর্থ পেজ", content: "এটি চতুর্থ পেজের কনটেন্ট। এই পেজটি একটি বিশেষ উদ্দেশ্য পূরণ করে।" },
+        5: { title: "পঞ্চম পেজ", content: "পঞ্চম পেজে আপনাকে স্বাগতম। এই সিস্টেমটি জাভাস্ক্রিপ্ট দিয়ে তৈরি।" },
+        6: { title: "ষষ্ঠ পেজ", content: "এটি ষষ্ঠ পেজের বিস্তারিত কনটেন্ট।" },
+        7: { title: "সপ্তম পেজ", content: "এটি সপ্তম পেজের কনটেন্ট। এখানে আরো তথ্য যোগ করা সম্ভব।" },
+        8: { title: "অষ্টম পেজ", content: "অষ্টম পেজে আপনাকে স্বাগতম।" },
+        9: { title: "নবম পেজ", content: "এটি নবম পেজের কনটেন্ট।" },
+        10: { title: "দশম পেজ", content: "দশম পেজের বিস্তারিত এখানে দেওয়া হলো।" },
+        11: { title: "একাদশ পেজ", content: "এটি একাদশ পেজের কনটেন্ট।" },
+        12: { title: "দ্বাদশ পেজ", content: "এটি সর্বশেষ, দ্বাদশ পেজের কনটেন্ট। ধন্যবাদ!" }
+    };
+
+    // ২. প্রয়োজনীয় HTML এলিমেন্টগুলো সিলেক্ট করা
+    const buttonContainer = document.getElementById('button-container');
+    const contentContainer = document.getElementById('content-container');
+    const contentTitle = document.getElementById('content-title');
+    const contentBody = document.getElementById('content-body');
+    const backButton = document.getElementById('back-button');
+    const allButtons = document.querySelectorAll('.custom-button[data-page]');
+
+    // ৩. পেজ দেখানোর জন্য ফাংশন
+    function showPage(pageNumber) {
+        const data = pageData[pageNumber];
+        if (data) {
+            // কনটেন্ট সেট করা
+            contentTitle.textContent = data.title;
+            contentBody.textContent = data.content;
+
+            // বাটন গ্রিড লুকিয়ে কনটেন্ট দেখানো
+            buttonContainer.classList.add('hidden');
+            contentContainer.classList.remove('hidden');
+        }
+    }
+
+    // ৪. মূল মেন্যু দেখানোর জন্য ফাংশন
+    function showMenu() {
+        // কনটেন্ট লুকিয়ে বাটন গ্রিড দেখানো
+        contentContainer.classList.add('hidden');
+        buttonContainer.classList.remove('hidden');
+    }
+
+    // ৫. প্রতিটি বাটনে ক্লিক ইভেন্ট যোগ করা
+    allButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const pageNumber = button.getAttribute('data-page');
+            showPage(pageNumber);
+        });
+    });
+
+    // ৬. "ফিরে যান" বাটনে ক্লিক ইভেন্ট যোগ করা
+    backButton.addEventListener('click', showMenu);
+
+</script>
 
 </body>
 </html>
