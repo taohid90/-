@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Borbaad 2025</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-black text-white">
+  <div class="max-w-md mx-auto">
+
+    <!-- Video Player -->
+    <video id="main-video" class="video-js vjs-default-skin w-full" controls preload="auto" poster="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpWxG4kZq4MAVPflNBPZINDIGUpUqLz2CIfq6T-RXGc85iuUggnVyxCwu9&s=10?text=Loading+Video">
+      <source src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" type="application/x-mpegURL" />
+    </video>
+
+    <!-- Server Buttons -->
+    <div class="flex space-x-3 bg-black p-3 overflow-x-auto no-scrollbar mt-2" id="server-buttons">
+      <!-- Buttons inserted via JS -->
+    </div>
+
+    <!-- Title & Info -->
+    <div class="px-5 pt-5 pb-3">
+      <h1 class="text-[#1ED760] font-extrabold text-1xl">🇿🇦 South Africa VS Australia 🇦🇺</h1>
+      <h2 class="text-white font-extrabold text-lg mt-2">WTC FiNAL 2025</h2>
+      <hr class="border-gray-700 my-4" />
+      <p class="text-gray-400 text-sm leading-relaxed">
+        <strong>Disclaimer:</strong> The content provided is for informational and entertainment purposes only. All videos belong to their respective copyright owners. We do not claim any ownership.
+      </p>
+    </div>
+
+    <!-- Live Watch Count -->
+    <div class="px-5 py-6 flex items-center space-x-2 text-lg font-semibold">
+      <span class="text-[#1ED760]">• Live</span>
+      <span class="text-red-500">|</span>
+      <span class="text-[#1ED760]" id="watching-count">Watching Now 0 People</span>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    const servers = [
+      { name: 'TOFFEE - BD', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
+      { name: 'ICC TV', url: 'https://test-streams.mux.dev/test_001/stream.m3u8' },
+      { name: 'WILLOW AQ', url: 'https://moiptvhls-i.akamaihd.net/hls/live/652106/xcs/manifest.m3u8' },
+      { name: 'Rafid IQ', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8' },
+    ];
+
+    const serverContainer = document.getElementById('server-buttons');
+    const videoPlayer = videojs('main-video');
+
+    let selectedServerIndex = 0;
+
+    function renderServerButtons() {
+      serverContainer.innerHTML = '';
+      servers.forEach((server, index) => {
+        const btn = document.createElement('button');
+        btn.className = `flex-shrink-0 border ${index === selectedServerIndex ? 'bg-[#1ED760] text-black font-bold' : 'border-[#1ED760] text-white'} rounded-full px-5 py-1 text-sm flex items-center space-x-2`;
+        btn.innerHTML = index === selectedServerIndex 
+          ? `<i class="fas fa-check"></i><span>${server.name}</span>` 
+          : `<span>${server.name}</span>`;
+        btn.onclick = () => {
+          selectedServerIndex = index;
+          videoPlayer.src({ type: "application/x-mpegURL", src: server.url });
+          videoPlayer.play();
+          renderServerButtons();
+        };
+        serverContainer.appendChild(btn);
+      });
+    }
+
+    renderServerButtons();
+
+    // Fake Real-Time Watching Count
+    let viewers = Math.floor(Math.random() * 10) + 1;
+    const countElement = document.getElementById('watching-count');
+    setInterval(() => {
+      viewers += Math.random() > 0.5 ? 1 : -1;
+      if (viewers < 1) viewers = 1;
+      countElement.textContent = `Watching Now ${viewers} People`;
+    }, 3000);
+  </script>
+</body>
+</html>
