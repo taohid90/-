@@ -25,7 +25,6 @@
     html, body {
       margin: 0; padding: 0; width: 100%; height: 100vh;
       overflow: hidden; background-color: var(--dark-bg);
-      /* নতুন ফন্ট ফ্যামিলি যোগ করা হয়েছে */
       font-family: 'Poppins', 'Hind Siliguri', sans-serif;
       display: flex; flex-direction: column;
     }
@@ -37,16 +36,11 @@
       background-color: #000;
       position: relative;
       border: none;
-      transition: opacity 0.3s ease;
+      /* পরিবর্তন: অ্যানিমেশনের জন্য ট্রানজিশন আপডেট করা হয়েছে */
+      transition: opacity 0.4s ease-in-out;
       box-shadow: 0 5px 15px var(--shadow-color);
     }
     #playerIframe { width: 100%; height: 100%; border: none; }
-    #clickShield {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: transparent; z-index: 10;
-      pointer-events: auto; transition: pointer-events 0.3s;
-    }
-    #playerContainer:hover #clickShield { pointer-events: none; }
 
     /* --- সার্ভার বাটন সেকশন --- */
     .server-section { 
@@ -108,14 +102,13 @@
       text-align: left;
     }
     
-    /* নতুন: ব্যানার ইমেজের জন্য স্টাইল */
     .match-banner {
       width: 365px;
       height: auto;
       display: block;
       margin-bottom: 20px;
       border-radius: 8px;
-      background-color: var(--medium-bg); /* ইমেজের লোডিং এর সময় দেখানোর জন্য */
+      background-color: var(--medium-bg);
     }
 
     .info-content .description {
@@ -160,8 +153,7 @@
 
   <!-- প্লেয়ার কন্টেইনার -->
   <div id="playerContainer">
-    <div id="clickShield"></div> 
-    <iframe id="playerIframe" allow="autoplay; fullscreen" allowfullscreen scrolling="no" src="about:blank" sandbox="allow-scripts allow-same-origin allow-fullscreen allow-presentation"></iframe>
+    <!-- পরিবর্তন: ফুল-স্ক্রিন ও ব্যাক বাটন সমস্যার জন্য iframe এখানে ডাইনামিকভাবে তৈরি হবে -->
   </div>
 
   <!-- সার্ভার বাটন সেকশন -->
@@ -186,10 +178,7 @@
   <!-- চ্যানেল ইনফরমেশন এবং শেয়ার সেকশন -->
   <div class="info-section">
     <div class="info-content">
-      
-      <!-- পরিবর্তন: h2 টেক্সটের পরিবর্তে এখানে ব্যানার ইমেজ ব্যবহার করা হয়েছে -->
-      <!-- গুরুত্বপূর্ণ: src="" এর মধ্যে আপনার নিজের ব্যানার ইমেজের লিংক দিন -->
-      <img src="https://i.postimg.cc/7L72pcXz/IMG-20250614-094453.png" alt="Bangladesh Vs Sri Lanka Match Banner" class="match-banner">
+      <img src="https://i.postimg.cc/7L72pcXz/IMG-20250614-094453.png" alt="Match Banner" class="match-banner">
       
       <p class="description">
        🔻 ভিডিও প্লেয়ারে তিনটি লিংক দেওয়া আপনার পছন্দমত যে কোন একটি সার্ভার বেছে নিন এবং বাফারলেস খেলা উপভোগ করুন 🔻
@@ -210,23 +199,39 @@
   </div>
 
   <script>
-    // জাভাস্ক্রিপ্ট কোডে কোনো পরিবর্তন প্রয়োজন নেই, এটি আগের মতোই কাজ করবে।
     document.addEventListener('DOMContentLoaded', function() {
         const playerContainer = document.getElementById('playerContainer');
-        const playerIframe = document.getElementById('playerIframe');
         const serverButtons = document.querySelectorAll('.server-btn');
 
+        // *** পরিবর্তন: এই ফাংশনটি এখন iframe রিমুভ এবং রি-ক্রিয়েট করে ***
         function loadStream(url) {
-            playerContainer.style.opacity = '0.5';
+            playerContainer.style.opacity = '0.3'; // ১. প্লেয়ার ফেড-আউট শুরু
+
             setTimeout(() => {
-                try {
-                    playerIframe.contentWindow.location.replace(url);
-                } catch (e) {
-                    playerIframe.src = url;
-                } finally {
-                    playerContainer.style.opacity = '1';
+                // ২. পুরোনো iframe খুঁজে বের করে তাকে DOM থেকে সরিয়ে ফেলা হয়
+                let oldIframe = document.getElementById('playerIframe');
+                if (oldIframe) {
+                    oldIframe.parentNode.removeChild(oldIframe);
                 }
-            }, 300);
+
+                // ৩. সকল অ্যাট্রিবিউটসহ একটি নতুন iframe তৈরি করা হয়
+                const newIframe = document.createElement('iframe');
+                newIframe.id = 'playerIframe';
+                newIframe.src = url;
+                newIframe.allow = 'autoplay; fullscreen';
+                newIframe.setAttribute('allowfullscreen', '');
+                newIframe.setAttribute('scrolling', 'no');
+                newIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-fullscreen allow-presentation');
+                
+                // ৪. iframe লোড হওয়ার পর প্লেয়ার আবার ফেড-ইন হবে
+                newIframe.onload = () => {
+                    playerContainer.style.opacity = '1';
+                };
+                
+                // ৫. নতুন iframe-টিকে কন্টেইনারে যোগ করা হবে
+                playerContainer.appendChild(newIframe);
+
+            }, 400); // অ্যানিমেশনের জন্য সময়
         }
 
         serverButtons.forEach(button => {
@@ -239,31 +244,12 @@
             });
         });
 
+        // পেইজ লোড হওয়ার সাথে সাথে প্রথম লিংকটি লোড হবে
         const firstActiveButton = document.querySelector('.server-btn.active');
         if (firstActiveButton) {
+            playerContainer.style.opacity = '0';
             loadStream(firstActiveButton.dataset.url);
         }
-
-        let shieldActive = true;
-        const clickShield = document.getElementById('clickShield');
-
-        clickShield.addEventListener('click', () => {
-          if (shieldActive) {
-            clickShield.style.pointerEvents = 'none';
-            shieldActive = false;
-            setTimeout(() => {
-              if (!shieldActive) {
-                 clickShield.style.pointerEvents = 'auto';
-                 shieldActive = true;
-              }
-            }, 3000);
-          }
-        });
-
-        playerContainer.addEventListener('mouseleave', () => {
-            clickShield.style.pointerEvents = 'auto';
-            shieldActive = true;
-        });
     });
   </script>
 
