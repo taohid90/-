@@ -131,14 +131,13 @@
 
   <!-- প্লেয়ার কন্টেইনার -->
   <div id="playerContainer">
-    <!-- ফুল-স্ক্রিন সমস্যার জন্য clickShield সরিয়ে ফেলা হয়েছে -->
     <iframe id="playerIframe" allow="autoplay; fullscreen" allowfullscreen scrolling="no" src="about:blank" sandbox="allow-scripts allow-same-origin allow-fullscreen allow-presentation"></iframe>
   </div>
 
   <!-- চ্যানেল গ্রিড সেকশন -->
   <div class="channel-grid-section">
     <div class="channel-grid">
-      <!-- চ্যানেল বাটন (HTML অপরিবর্তিত) -->
+      <!-- চ্যানেল বাটন (সংশোধিত তালিকা) -->
       <button class="channel-btn active" data-url="https://aynaott.fredflix.fun/play.php?channel_id=b1808fb2-8892-49dc-965e-d038e5334995">
         <img src="https://fredflix.fun/assets/images/67ea230d98795_GTV%2031670253750.png" alt="GTV">
         <span>GTV</span>
@@ -168,6 +167,47 @@
         <img src="https://fredflix.fun/assets/images/67ea26e1be9e9_20250331_111742.png" alt="Tsn">
         <span>Tsn</span>
       </button>
+
+      <button class="channel-btn" data-url="https://stream.yflix.top/play.html?channel_id=55cf9423bf">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000013085.png" alt="Toffee Sports ViP">
+        <span>Toffee Sports ViP</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://stream.yflix.top/play.html?channel_id=035967c052">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000012987.png" alt="IPL 2025">
+        <span>IPL 2025</span>
+      </button>
+      
+      <button class="channel-btn" data-url="https://stream.yflix.top/play.html?channel_id=5648f225e8">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000010341.png" alt="Sony Ten 1 HD">
+        <span>Sony Ten 1 HD</span>
+      </button>
+      
+      <button class="channel-btn" data-url="https://stream.yflix.top/play.html?channel_id=c40348b8d2">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000013082.png" alt="Sony Ten 2 HD">
+        <span>Sony Ten 2 HD</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://stream.yflix.top/play.html?channel_id=3e47c1baaf">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000013084.png" alt="Ten Cricket HD">
+        <span>Ten Cricket HD</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://stream.yflix.top/play.html?channel_id=ef22d71b0e">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000012994.png" alt="Euro Sport HD">
+        <span>Euro Sport HD</span>
+      </button>
+      
+      <button class="channel-btn" data-url="https://its-ferdos-alom.top/re/Op/play.php?cid=167578">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000012821.png" alt="Star Sports Select 1 HD">
+        <span>Star Sports Select 1</span>
+      </button>
+      
+      <button class="channel-btn" data-url="https://its-ferdos-alom.top/re/Op/play.php?cid=167579">
+        <img src="https://raw.githubusercontent.com/msplayerapp/-Mitu/main/mow/Logos/1000012823.png" alt="Star Sports Select 2 HD">
+        <span>Star Sports Select 2</span>
+      </button>
+
     </div>
   </div>
 
@@ -177,7 +217,7 @@
         const playerIframe = document.getElementById('playerIframe');
         const channelButtons = document.querySelectorAll('.channel-btn');
 
-        // এই ফাংশনে ফেড অ্যানিমেশন যুক্ত করা হয়েছে
+        // এই ফাংশনে ফেড অ্যানিমেশন এবং ব্যাক বাটনের সমস্যা সমাধান করা হয়েছে
         function loadStream(url) {
             // ১. প্লেয়ারটি প্রথমে ফেড-আউট হবে
             playerContainer.style.opacity = '0.3'; 
@@ -185,7 +225,8 @@
             // ২. অল্প সময় পর iframe এর সোর্স পরিবর্তন হবে
             setTimeout(() => {
                 try {
-                    playerIframe.src = url;
+                    // ব্রাউজার হিস্টোরি তৈরি না করে iframe লোড করার জন্য location.replace ব্যবহার করা হয়েছে
+                    playerIframe.contentWindow.location.replace(url);
                 } catch (e) {
                     console.error("Stream loading error:", e);
                 } finally {
