@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rafid - Live Channels</title>
+
+  <!-- Google Font: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-color: #007bff;
+      --active-glow-color: rgba(0, 123, 255, 0.5);
+      --dark-bg: #121212;
+      --medium-bg: #1a1a1a;
+      --light-bg: #2c2c2c;
+      --text-color: #f0f0f0;
+      --text-secondary-color: #a0a0a0;
+      --border-color: #383838; /* বর্ডারের জন্য একটু উজ্জ্বল রঙ */
+      --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100vh;
+      overflow: hidden; background-color: var(--dark-bg);
+      font-family: 'Poppins', sans-serif;
+      display: flex; flex-direction: column;
+    }
+
+    /* --- প্লেয়ার কন্টেইনার এবং iframe --- */
+    #playerContainer {
+      width: 100%;
+      aspect-ratio: 16 / 9; 
+      background-color: #000;
+      position: relative;
+      border: none;
+      /* চ্যানেল পরিবর্তনের সময় মসৃণ ফেড অ্যানিমেশন */
+      transition: opacity 0.4s ease-in-out; 
+      box-shadow: 0 5px 20px var(--shadow-color);
+    }
+    #playerIframe { width: 100%; height: 100%; border: none; }
+
+    /* --- চ্যানেল গ্রিড সেকশন --- */
+    .channel-grid-section {
+      flex-grow: 1;
+      background-color: var(--medium-bg);
+      padding: 25px 20px;
+      overflow-y: auto;
+      border-top: 1px solid var(--border-color);
+    }
+    .channel-grid {
+      display: grid;
+      /* ডেস্কটপের জন্য লেআউট */
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* --- চ্যানেল বাটন স্টাইল --- */
+    .channel-btn {
+      background: none;
+      border: none;
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      text-align: center;
+      color: var(--text-secondary-color);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .channel-btn:hover {
+        background-color: var(--light-bg);
+        transform: translateY(-3px); /* হোভারে হালকা উপরে উঠবে */
+    }
+
+    /* --- চ্যানেল ইমেজ স্টাইল (চিকন বর্ডার সহ) --- */
+    .channel-btn img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%; /* ইমেজ গোল করার জন্য */
+      object-fit: cover;
+      display: block;
+      margin: 0 auto 12px auto;
+      /* নতুন: চিকন বর্ডার যোগ করা হয়েছে */
+      border: 2px solid var(--border-color); 
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .channel-btn:hover img {
+        border-color: var(--text-secondary-color);
+        transform: scale(1.05);
+    }
+
+    /* --- সক্রিয় চ্যানেলের জন্য বিশেষ স্টাইল --- */
+    .channel-btn.active {
+      color: var(--text-color);
+      font-weight: 600;
+    }
+    .channel-btn.active img {
+      border-color: var(--primary-color);
+      transform: scale(1.1);
+      /* সক্রিয় চ্যানেলের জন্য Glow effect */
+      box-shadow: 0 0 15px var(--active-glow-color); 
+    }
+
+    /* --- মোবাইল ডিভাইসের জন্য রেসপন্সিভ ডিজাইন --- */
+    @media (max-width: 600px) {
+      .channel-grid-section {
+        padding: 20px 15px; /* মোবাইলে প্যাডিং কমানো হলো */
+      }
+      .channel-grid {
+        /* মোবাইলে প্রতি সারিতে আরও বেশি চ্যানেল দেখানোর জন্য minmax কমানো হলো */
+        grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+        gap: 15px; /* চ্যানেলগুলোর মধ্যে ব্যবধান কমানো হলো */
+      }
+      .channel-btn img {
+        width: 75px; /* ইমেজ সাইজ কমানো হলো */
+        height: 75px;
+      }
+      .channel-btn span {
+        font-size: 13px; /* ফন্ট সাইজ কমানো হলো */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- প্লেয়ার কন্টেইনার -->
+  <div id="playerContainer">
+    <!-- ফুল-স্ক্রিন সমস্যার জন্য clickShield সরিয়ে ফেলা হয়েছে -->
+    <iframe id="playerIframe" allow="autoplay; fullscreen" allowfullscreen scrolling="no" src="about:blank" sandbox="allow-scripts allow-same-origin allow-fullscreen allow-presentation"></iframe>
+  </div>
+
+  <!-- চ্যানেল গ্রিড সেকশন -->
+  <div class="channel-grid-section">
+    <div class="channel-grid">
+      <!-- চ্যানেল বাটন (HTML অপরিবর্তিত) -->
+      <button class="channel-btn active" data-url="https://aynaott.fredflix.fun/play.php?channel_id=b1808fb2-8892-49dc-965e-d038e5334995">
+        <img src="https://fredflix.fun/assets/images/67ea230d98795_GTV%2031670253750.png" alt="GTV">
+        <span>GTV</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://aynaott.fredflix.fun/play.php?channel_id=490e6a84-17e2-42bb-8725-66af0c067239">
+        <img src="https://fredflix.fun/assets/images/67ea28acb9aea_20250331_112709.png" alt="Bein Sports">
+        <span>Bein Sports</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://aynaott.fredflix.fun/play.php?channel_id=fc95d30e-5323-4c12-bb38-7a1e3f04acc2">
+        <img src="https://fredflix.fun/assets/images/67ea2905d5647_20250331_112730.png" alt="T Sports">
+        <span>T Sports</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://aynaott.yflix.top/play.php?channel_id=a3d48c46-7902-45e2-abf9-0fab60c4d117">
+        <img src="https://fredflix.fun/assets/images/67ea26b632c7e_20250331_111829.png" alt="A SPORTS">
+        <span>A SPORTS</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://aynaott.yflix.top/play.php?channel_id=eacf6c3f-0773-4bc3-a03a-cfee09f10348">
+        <img src="https://fredflix.fun/assets/images/67ea26f3ae807_20250331_111725.png" alt="PTV Sports">
+        <span>PTV Sports</span>
+      </button>
+
+      <button class="channel-btn" data-url="https://aynaott.fredflix.fun/play.php?channel_id=6cce2b86-f371-4184-b288-988de0607926">
+        <img src="https://fredflix.fun/assets/images/67ea26e1be9e9_20250331_111742.png" alt="Tsn">
+        <span>Tsn</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const playerContainer = document.getElementById('playerContainer');
+        const playerIframe = document.getElementById('playerIframe');
+        const channelButtons = document.querySelectorAll('.channel-btn');
+
+        // এই ফাংশনে ফেড অ্যানিমেশন যুক্ত করা হয়েছে
+        function loadStream(url) {
+            // ১. প্লেয়ারটি প্রথমে ফেড-আউট হবে
+            playerContainer.style.opacity = '0.3'; 
+
+            // ২. অল্প সময় পর iframe এর সোর্স পরিবর্তন হবে
+            setTimeout(() => {
+                try {
+                    playerIframe.src = url;
+                } catch (e) {
+                    console.error("Stream loading error:", e);
+                } finally {
+                    // ৩. নতুন চ্যানেল লোড হওয়ার পর প্লেয়ারটি আবার ফেড-ইন হবে
+                    playerIframe.onload = () => {
+                        playerContainer.style.opacity = '1';
+                        playerIframe.onload = null; // মেমোরি লিক এড়ানোর জন্য
+                    };
+                }
+            }, 400); // অ্যানিমেশনের জন্য 400 মিলিসেকেন্ড সময় দেওয়া হলো
+        }
+
+        channelButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.classList.contains('active')) return;
+                
+                const newUrl = this.dataset.url;
+                loadStream(newUrl);
+
+                channelButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // পেইজ লোড হওয়ার সাথে সাথে প্রথম চ্যানেলটি লোড হবে (ফেড-ইন সহ)
+        const firstActiveButton = document.querySelector('.channel-btn.active');
+        if (firstActiveButton) {
+            playerContainer.style.opacity = '0'; // শুরুতে অদৃশ্য থাকবে
+            loadStream(firstActiveButton.dataset.url);
+        }
+    });
+  </script>
+
+</body>
+</html>
