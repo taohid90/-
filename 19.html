@@ -10,6 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
+  <!-- HLS.js লাইব্রেরি এখানে যোগ করা হলো, যা m3u8 ফাইল প্লে করতে প্রয়োজন হবে -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
   <style>
     :root {
       --primary-color: #007bff;
@@ -29,18 +32,23 @@
       display: flex; flex-direction: column;
     }
 
-    /* --- প্লেয়ার কন্টেইনার এবং iframe --- */
+    /* --- প্লেয়ার কন্টেইনার এবং এর ভেতরের এলিমেন্ট --- */
     #playerContainer {
       width: 100%;
       aspect-ratio: 16 / 9; 
       background-color: #000;
       position: relative;
       border: none;
-      /* পরিবর্তন: অ্যানিমেশনের জন্য ট্রানজিশন আপডেট করা হয়েছে */
       transition: opacity 0.4s ease-in-out;
       box-shadow: 0 5px 15px var(--shadow-color);
     }
-    #playerIframe { width: 100%; height: 100%; border: none; }
+    /* iframe এবং video ট্যাগের জন্য কমন স্টাইল */
+    #playerContainer > iframe,
+    #playerContainer > video {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
     /* --- সার্ভার বাটন সেকশন --- */
     .server-section { 
@@ -90,76 +98,43 @@
     
     /* --- চ্যানেল ইনফরমেশন সেকশন --- */
     .info-section {
-      flex-grow: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background-color: var(--dark-bg);
-      color: var(--text-color);
+      flex-grow: 1; padding: 20px; overflow-y: auto;
+      background-color: var(--dark-bg); color: var(--text-color);
     }
-    .info-content {
-      max-width: 900px;
-      margin: 0 auto;
-      text-align: left;
-    }
-    
+    .info-content { max-width: 900px; margin: 0 auto; text-align: left; }
     .match-banner {
-      width: 339px;
-      height: auto;
-      display: block;
-      margin-bottom: 20px;
-      border-radius: 8px;
+      width: 339px; height: auto; display: block;
+      margin-bottom: 20px; border-radius: 8px;
       background-color: var(--medium-bg);
     }
-
-    .info-content .description {
-      font-size: 16px;
-      color: #ccc;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
+    .info-content .description { font-size: 16px; color: #ccc; line-height: 1.6; margin-bottom: 20px; }
     .info-content .meta-info {
-      font-size: 14px;
-      color: #aaa;
-      background: var(--medium-bg);
-      padding: 10px 15px;
-      border-radius: 6px;
-      border-left: 3px solid var(--primary-color);
-      margin-bottom: 20px;
+      font-size: 14px; color: #aaa; background: var(--medium-bg);
+      padding: 10px 15px; border-radius: 6px;
+      border-left: 3px solid var(--primary-color); margin-bottom: 20px;
     }
     .share-section h3 {
-      font-size: 18px;
-      margin-bottom: 15px;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 10px;
+      font-size: 18px; margin-bottom: 15px;
+      border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
     }
     .share-buttons a {
-      display: inline-block;
-      margin-right: 15px;
-      color: #ccc;
+      display: inline-block; margin-right: 15px; color: #ccc;
       transition: color 0.3s, transform 0.3s;
     }
-    .share-buttons a:hover {
-      color: #fff;
-      transform: scale(1.1);
-    }
-    .share-buttons svg {
-      width: 28px;
-      height: 28px;
-    }
-
+    .share-buttons a:hover { color: #fff; transform: scale(1.1); }
+    .share-buttons svg { width: 28px; height: 28px; }
   </style>
 </head>
 <body>
 
-  <!-- প্লেয়ার কন্টেইনার -->
+  <!-- প্লেয়ার কন্টেইনার (এটি এখন ডাইনামিকভাবে পরিবর্তিত হবে) -->
   <div id="playerContainer">
-    <!-- পরিবর্তন: ফুল-স্ক্রিন ও ব্যাক বাটন সমস্যার জন্য iframe এখানে ডাইনামিকভাবে তৈরি হবে -->
+    <!-- এখানে জাভাস্ক্রিপ্ট দিয়ে <video> বা <iframe> যোগ করা হবে -->
   </div>
 
   <!-- সার্ভার বাটন সেকশন -->
   <div class="server-section">
     <div class="server-buttons">
-      <!-- বাটনগুলোতে আইকন যোগ করা হয়েছে -->
       <button class="server-btn active" data-url="https://aynaott.fredflix.fun/play.php?channel_id=fc95d30e-5323-4c12-bb38-7a1e3f04acc2">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
         T Sports <span class="tick"></span>
@@ -177,68 +152,70 @@
   
   <!-- চ্যানেল ইনফরমেশন এবং শেয়ার সেকশন -->
   <div class="info-section">
-    <div class="info-content">
-      <img src="https://i.postimg.cc/7L72pcXz/IMG-20250614-094453.png" alt="Match Banner" class="match-banner">
-      
-      <p class="description">
-       🔻 ভিডিও প্লেয়ারে তিনটি লিংক দেওয়া আপনার পছন্দমত যে কোন একটি সার্ভার বেছে নিন এবং বাফারলেস খেলা উপভোগ করুন 🔻
-      </p>
-      <p class="meta-info">
-        <strong>নির্দেশনা :</strong> বাংলাদেশ বনাম শ্রীলঙ্কা এই ম্যাচটি দেখতে যদি কোন সমস্যা হয় বাফার করে তাহলে আমাদের অ্যাপের সাপোর্ট সেকশনে গিয়ে আপনার রিপোর্ট জমা দিন এবং আমরা খুব শীঘ্রই এটা ঠিক করে দিব 👍💯
-      </p>
-      
-      <div class="share-section">
-        <h3>Share this Stream</h3>
-        <div class="share-buttons">
-          <a href="#" title="Share on Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
-          <a href="#" title="Share on Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a>
-          <a href="#" title="Share on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.586-1.457l-6.354 1.654zm6.838-9.922c.043-.156.418-.156.581-.156.162 0 .324.004.486.007.162.002.324.004.405.045.081.04.122.082.163.123.081.081.243.325.284.406.04.082.081.163.122.244.041.082.081.163.04.244-.041.081-.081.122-.162.203-.082.081-.163.163-.244.244-.081.081-.162.122-.243.203-.082.081-.162.122-.122.203.04.081.162.162.243.244.082.081.163.163.244.244.082.081.163.122.244.203.081.081.121.081.162.04.04-.041.081-.082.121-.123.081-.081.162-.163.243-.244.082-.081.163-.122.244-.203.081-.081.162-.081.243-.04.082.04.122.082.162.123.081.081.122.123.162.163.041.04.082.081.122.122.04.041.04.082 0 .122-.041.04-.122.123-.243.244-.122.122-.244.244-.365.365-.122.122-.162.163-.203.203-.04.041-.04.041 0 .082.04.04.081.04.122.04.162 0 .324-.004.486-.007.162-.002.324-.004.405-.045.081-.04.122-.082.163-.123.081-.081.243-.325.284-.406.04-.082.081-.163.122-.244.041-.082.081-.163.04-.244-.041-.081-.081-.122-.162-.203-.082-.081-.163-.163-.244-.244-.081-.081-.162-.122-.243-.203-.082-.081-.162-.122-.122-.203.04-.081.162-.162.243-.244.082-.081.163-.163.244-.244.082-.081.163-.122.244-.203.081-.081.121-.081.162-.04.04-.041.081-.082.121-.123.081-.081.162-.163.243-.244.082-.081.163-.122.244-.203.081-.081.162-.081.243-.04.082.04.122.082.162.123.081.081.122.123.162.163.041.04.082.081.122.122.04.041.04.082 0 .122-.041.04-.122.123-.243.244-.122.122-.244.244-.365.365-.122.122-.162.163-.203.203-.04.041-.04.041 0 .082.04.04.081.04.122.04.162 0 .324-.004.486-.007.162-.002.324-.004.405-.045.081-.04.122-.082.163-.123.081-.081.243-.325.284-.406.04-.082.081-.163.122-.244.041-.082.081-.163.04-.244-.041-.081-.081-.122-.162-.203-.082-.081-.163-.163-.244-.244-.081-.081-.162-.122-.243-.203-.082-.081-.162-.122-.122-.203.04-.081.162-.162.243-.244.082-.081.163-.163.244-.244.082-.081.163-.122.244-.203.081-.081.121-.081.162-.04.04-.041.081-.082.121-.123.081-.081.162-.163.243-.244.082-.081.163-.122.244-.203.081-.081.162-.081.243-.04.082.04.122.082.162.123.081.081.122.123.162.163.041.04.082.081.122.122.04.041.04.082 0 .122-.041.04-.122.123-.243.244-.122.122-.244.244-.365.365-.122.122-.162.163-.203.203-.04.041-.04.041 0 .082z"></path></svg></a>
-        </div>
-      </div>
-    </div>
+      <!-- ... (এই অংশের কোনো পরিবর্তন প্রয়োজন নেই) ... -->
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
         const playerContainer = document.getElementById('playerContainer');
         const serverButtons = document.querySelectorAll('.server-btn');
+        let hlsInstance = null; // HLS.js এর ইনস্ট্যান্স রাখার জন্য
 
-        // *** পরিবর্তন: এই ফাংশনটি এখন iframe রিমুভ এবং রি-ক্রিয়েট করে ***
+        // *** এই ফাংশনটি এখন লিঙ্ক পরীক্ষা করে প্লেয়ার বা iframe তৈরি করে ***
         function loadStream(url) {
-            playerContainer.style.opacity = '0.3'; // ১. প্লেয়ার ফেড-আউট শুরু
+            playerContainer.style.opacity = '0.3'; // অ্যানিমেশন শুরু
 
             setTimeout(() => {
-                // ২. পুরোনো iframe খুঁজে বের করে তাকে DOM থেকে সরিয়ে ফেলা হয়
-                let oldIframe = document.getElementById('playerIframe');
-                if (oldIframe) {
-                    oldIframe.parentNode.removeChild(oldIframe);
+                // কন্টেইনার খালি করা হচ্ছে
+                playerContainer.innerHTML = '';
+                // পুরোনো HLS ইনস্ট্যান্স নষ্ট করা হচ্ছে
+                if (hlsInstance) {
+                    hlsInstance.destroy();
+                    hlsInstance = null;
                 }
 
-                // ৩. সকল অ্যাট্রিবিউটসহ একটি নতুন iframe তৈরি করা হয়
-                const newIframe = document.createElement('iframe');
-                newIframe.id = 'playerIframe';
-                newIframe.src = url;
-                newIframe.allow = 'autoplay; fullscreen';
-                newIframe.setAttribute('allowfullscreen', '');
-                newIframe.setAttribute('scrolling', 'no');
-                newIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-fullscreen allow-presentation');
-                
-                // ৪. iframe লোড হওয়ার পর প্লেয়ার আবার ফেড-ইন হবে
-                newIframe.onload = () => {
-                    playerContainer.style.opacity = '1';
-                };
-                
-                // ৫. নতুন iframe-টিকে কন্টেইনারে যোগ করা হবে
-                playerContainer.appendChild(newIframe);
+                // ধাপ ১: লিঙ্কটি কি সরাসরি ভিডিও স্ট্রিম (.m3u8)?
+                if (url.includes('.m3u8')) {
+                    // একটি <video> এলিমেন্ট তৈরি করা হচ্ছে
+                    const video = document.createElement('video');
+                    video.id = 'hlsPlayer';
+                    video.controls = true;
+                    video.autoplay = true;
+                    playerContainer.appendChild(video);
 
+                    // HLS.js দিয়ে স্ট্রিম প্লে করার লজিক
+                    if (Hls.isSupported()) {
+                        hlsInstance = new Hls();
+                        hlsInstance.loadSource(url);
+                        hlsInstance.attachMedia(video);
+                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        // কিছু ব্রাউজার (যেমন Safari) সরাসরি m3u8 প্লে করতে পারে
+                        video.src = url;
+                    }
+
+                // ধাপ ২: লিঙ্কটি যদি একটি ওয়েবপেজ হয় (অন্যান্য সব লিঙ্ক)
+                } else {
+                    // একটি <iframe> এলিমেন্ট তৈরি করা হচ্ছে
+                    const iframe = document.createElement('iframe');
+                    iframe.src = url;
+                    iframe.allow = 'autoplay; fullscreen';
+                    iframe.setAttribute('allowfullscreen', '');
+                    iframe.setAttribute('scrolling', 'no');
+                    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-fullscreen allow-presentation');
+                    playerContainer.appendChild(iframe);
+                }
+
+                playerContainer.style.opacity = '1'; // অ্যানিমেশন শেষ
             }, 400); // অ্যানিমেশনের জন্য সময়
         }
 
         serverButtons.forEach(button => {
             button.addEventListener('click', function() {
                 if (this.classList.contains('active')) return;
+
                 const newUrl = this.dataset.url;
                 loadStream(newUrl);
+
                 serverButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
             });
