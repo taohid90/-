@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Player with Fullscreen</title>
+  
+  <!-- 1. Plyr.io Player এর CSS -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  
+  <!-- 2. HLS.js এবং Plyr.io এর JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+  <style>
+    :root {
+      --primary-green: #1fdd84;
+      --active-gradient: linear-gradient(45deg, #28a745, #218838);
+      --dark-bg: #000000;
+      --medium-bg: #1f1f1f;
+      --light-bg: #2a2a2a;
+      --text-color: #f0f0f0;
+      --border-color: #444;
+    }
+
+    body {
+      margin: 0; padding: 0; width: 100vw; height: 100vh;
+      background-color: var(--dark-bg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex; flex-direction: column;
+      color: var(--text-color);
+      overflow: hidden;
+    }
+
+    .player-wrapper {
+      width: 100%; max-width: 450px; height: 100%;
+      margin: 0 auto;
+      display: flex; flex-direction: column;
+      background-color: var(--dark-bg);
+    }
+
+    .top-bar {
+      display: flex; align-items: center;
+      padding: 15px 16px; /* সামান্য প্যাডিং বাড়ানো হলো */
+      flex-shrink: 0;
+      gap: 15px;
+    }
+    
+    .back-arrow { cursor: pointer; flex-shrink: 0; }
+    .back-arrow .icon { width: 24px; height: 24px; fill: #fff; }
+
+    .server-buttons {
+      display: flex; gap: 10px;
+      overflow-x: auto; scrollbar-width: none;
+      padding-bottom: 5px;
+    }
+    .server-buttons::-webkit-scrollbar { display: none; }
+
+    .server-btn { 
+      position: relative; display: inline-flex; align-items: center;
+      background: var(--light-bg); color: var(--text-color); 
+      border: 1px solid var(--border-color); border-radius: 25px; 
+      padding: 8px 18px; font-size: 14px; font-weight: 600; 
+      cursor: pointer; transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .server-btn .icon { margin-right: 8px; width: 16px; height: 16px; stroke: currentColor; }
+    .server-btn:hover { border-color: var(--primary-green); }
+    .server-btn.active { 
+      background: var(--active-gradient); border-color: #28a745; color: #fff;
+    }
+
+    /* --- ভিডিও এরিয়া --- */
+    .video-area {
+      flex-grow: 1; /* এটি বাকি সব জায়গা নেবে */
+      position: relative;
+      background-color: #000;
+      min-height: 200px; /* একটি সর্বনিম্ন উচ্চতা, যেন কন্টেন্ট লোড না হলেও জায়গা থাকে */
+    }
+    
+    /* কন্টেইনার যা ভিডিও বা আইফ্রেম ধারণ করবে */
+    .plyr-container, .iframe-container {
+        width: 100%; height: 100%;
+    }
+
+    .iframe-container iframe {
+        width: 100%; height: 100%; border: none;
+    }
+    
+    /* Plyr প্লেয়ারের রঙ পরিবর্তন */
+    :root {
+        --plyr-color-main: var(--primary-green);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="player-wrapper">
+
+    <div class="top-bar">
+      <a class="back-arrow" onclick="history.back()" title="Go Back">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+      </a>
+      
+      <div class="server-buttons">
+        <button class="server-btn active" data-url="https://padmaonline.duckdns.org:8088/restream3/index.m3u8">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+          Ban Vs Sri (Bufferless)
+        </button>
+        <button class="server-btn" data-url="https://stream.yflix.top/play.html?channel_id=3e47c1baaf">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+          by rafid
+        </button>
+        <button class="server-btn" data-url="https://aynaott.fredflix.fun/play.php?channel_id=fc95d30e-5323-4c12-bb38-7a1e3f04acc2">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+          T Sports Sd
+        </button>
+      </div>
+    </div>
+
+    <div class="video-area">
+      <!-- Plyr প্লেয়ার এই কন্টেইনারে থাকবে -->
+      <div class="plyr-container">
+          <video id="player" playsinline controls></video>
+      </div>
+      <!-- Iframe এই কন্টেইনারে থাকবে -->
+      <div class="iframe-container" style="display: none;">
+          <iframe allow="autoplay; fullscreen" allowfullscreen></iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const serverButtons = document.querySelectorAll('.server-btn');
+      const plyrContainer = document.querySelector('.plyr-container');
+      const iframeContainer = document.querySelector('.iframe-container');
+      const videoElement = document.getElementById('player');
+      const iframeElement = iframeContainer.querySelector('iframe');
+      
+      let hlsInstance = null;
+      
+      // 3. Plyr প্লেয়ার ইনিশিয়ালাইজ করা
+      const player = new Plyr(videoElement, {
+          captions: { active: true, update: true, language: 'en' },
+      });
+
+      // ভিডিও লোড করার উন্নত ফাংশন
+      function loadVideo(url) {
+        if (hlsInstance) {
+          hlsInstance.destroy();
+          hlsInstance = null;
+        }
+
+        if (url.includes('.m3u8')) {
+          // HLS স্ট্রিমের জন্য Plyr ব্যবহার করা হবে
+          iframeContainer.style.display = 'none';
+          plyrContainer.style.display = 'block';
+
+          if (Hls.isSupported()) {
+            hlsInstance = new Hls();
+            hlsInstance.loadSource(url);
+            hlsInstance.attachMedia(videoElement);
+            window.hls = hlsInstance;
+            
+            // Plyr কে সোর্স সম্পর্কে জানানো
+            player.source = {
+                type: 'video',
+                title: 'Live Stream',
+                sources: [{ src: url, type: 'application/x-mpegURL' }],
+            };
+            player.play();
+          }
+        } else {
+          // অন্য সব লিঙ্কের জন্য Iframe ব্যবহার করা হবে
+          plyrContainer.style.display = 'none';
+          iframeContainer.style.display = 'block';
+          player.stop(); // Plyr প্লেয়ার বন্ধ করা
+          iframeElement.src = url;
+        }
+      }
+
+      // সার্ভার বাটনগুলোতে ক্লিক ইভেন্ট
+      serverButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          if (this.classList.contains('active')) return;
+          serverButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          loadVideo(this.dataset.url);
+        });
+      });
+
+      // *** 4. স্বয়ংক্রিয় রোটেশন সহ উন্নত ফুলস্ক্রিন ফাংশন ***
+      player.on('enterfullscreen', event => {
+        try {
+          if (screen.orientation && typeof screen.orientation.lock === 'function') {
+            screen.orientation.lock('landscape').catch(err => console.error(err));
+          }
+        } catch (error) {
+          console.error("Screen orientation lock failed:", error);
+        }
+      });
+
+      player.on('exitfullscreen', event => {
+        try {
+          if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+            screen.orientation.unlock();
+          }
+        } catch (error) {
+          console.error("Screen orientation unlock failed:", error);
+        }
+      });
+
+      // ডিফল্ট ভিডিও লোড করা
+      const initialActiveButton = document.querySelector('.server-btn.active');
+      if (initialActiveButton) {
+        loadVideo(initialActiveButton.dataset.url);
+      }
+    });
+  </script>
+
+</body>
+</html>
