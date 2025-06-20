@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>ধামাকা প্লেয়ার | উন্নত ফুলস্ক্রিন</title>
   
-  <!-- 1. Google Fonts (Inter) - নতুন যোগ করা হয়েছে -->
+  <!-- 1. পরিবর্তন করা হয়েছে: নতুন Google Font (Hind Siliguri) যোগ করা হয়েছে -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
   
   <!-- 2. Plyr.io Player এর CSS -->
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
@@ -36,8 +36,8 @@
     body {
       margin: 0; padding: 0; width: 100vw; height: 100vh;
       background-color: var(--dark-bg-1);
-      /* নতুন ফন্ট যোগ করা হয়েছে */
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* পরিবর্তন করা হয়েছে: নতুন ফন্ট প্রয়োগ করা হয়েছে */
+      font-family: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       display: flex; flex-direction: column;
       color: var(--text-color);
     }
@@ -83,7 +83,6 @@
     .server-buttons {
       display: flex; gap: 10px;
       overflow-x: auto; scrollbar-width: none;
-      /* ডিজাইন সমস্যা সমাধানের জন্য প্যাডিং যোগ করা হয়েছে */
       padding: 5px 15px; 
     }
     .server-buttons::-webkit-scrollbar { display: none; }
@@ -118,21 +117,19 @@
     .iframe-container iframe {
         width: 100%; height: 100%; border: none;
     }
-    /* --- নতুন ইমেজ কন্টেইনারের জন্য সমাধানসহ স্টাইল --- */
-.promo-image-container {
-    /* flex-grow: 1; সরানো হয়েছে, কারণ এটাই অতিরিক্ত ফাঁকা জায়গা তৈরি করছিল */
-    padding: 0 10px; /* উপরে-নিচে প্যাডিং বাদ দেওয়া হয়েছে, মার্জিন দিয়ে নিয়ন্ত্রণ করা হবে */
-    margin-top: 24px; /* ভিডিও প্লেয়ারের নিচে একটি নির্দিষ্ট ফাঁকা জায়গা তৈরি করা হলো */
-    flex-shrink: 0; /* কন্টেইনার যেন ছোট না হয়ে যায় */
-}
-.promo-image-container img {
-    display: block; /* ছবিটি যেন একটি ব্লক এলিমেন্ট হিসেবে থাকে */
-    width: 100%; /* কন্টেইনারের পুরো প্রস্থ গ্রহণ করবে */
-    max-width: 100%; /* প্রস্থ যেন কন্টেইনারের বাইরে না যায় */
-    height: auto; /* উচ্চতা স্বয়ংক্রিয়ভাবে প্রস্থের সাথে অনুপাত অনুযায়ী সেট হবে */
-    /* object-fit: cover; সরানো হয়েছে, কারণ ছবিটি আর কাটার প্রয়োজন নেই */
-    border-radius: 8px;
-}
+    /* --- ইমেজ কন্টেইনার --- */
+    .promo-image-container {
+        padding: 0 10px;
+        margin-top: 24px;
+        flex-shrink: 0;
+    }
+    .promo-image-container img {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
     /* --- Plyr প্লেয়ার কাস্টমাইজেশন --- */
     :root {
         --plyr-color-main: var(--primary-accent);
@@ -146,17 +143,10 @@
     }
     .plyr--video .plyr__control--overlaid:hover { background: var(--primary-accent); }
     .plyr--video .plyr__control--overlaid svg { left: 55%; }
-    /* --- অ্যাপ-এর জন্য ফলব্যাক ফুলস্ক্রিন মোড --- */
-    body.app-fullscreen-mode .video-area {
-      position: fixed; top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: 9999;
-      aspect-ratio: unset;
-    }
-    body.app-fullscreen-mode .top-bar,
-    body.app-fullscreen-mode .promo-image-container {
-      display: none;
-    }
+
+    /* --- মুছে ফেলা হয়েছে: কাস্টম ফুলস্ক্রিনের জন্য অপ্রয়োজনীয় CSS --- */
+    /* body.app-fullscreen-mode সম্পর্কিত সব স্টাইল মুছে ফেলা হয়েছে */
+
   </style>
 </head>
 <body>
@@ -168,7 +158,6 @@
       </a>
       
       <div class="server-buttons-container">
-        <!-- সার্ভার বাটনগুলো এখন খালি থাকবে এবং জাভাস্ক্রিপ্ট দিয়ে লোড হবে -->
         <div class="server-buttons" id="server-buttons">
             <p style="padding: 10px; color: var(--text-muted);">সার্ভার লোড হচ্ছে...</p>
         </div>
@@ -226,7 +215,9 @@
     try {
       player = new Plyr(videoElement, {
         captions: { active: true, update: true, language: 'en' },
-        fullscreen: { enabled: true, fallback: true, iosNative: true },
+        // পরিবর্তন করা হয়েছে: ফুলস্ক্রিন অপশন থেকে fallback: true বাদ দেওয়া হয়েছে
+        // এটি এখন প্লেয়ারের নিজস্ব ফুলস্ক্রিন ব্যবহার করবে।
+        fullscreen: { enabled: true, iosNative: true },
         controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
       });
     } catch(e) { console.error("Plyr initialization failed:", e); }
@@ -259,7 +250,6 @@
     function updateUrlForServer(serverKey) {
         const url = new URL(window.location);
         url.searchParams.set('server', serverKey);
-        // replaceState ব্যবহার করলে ব্রাউজার হিস্ট্রিতে নতুন এন্ট্রি তৈরি হয় না
         history.replaceState(null, '', url.toString());
     }
 
@@ -267,37 +257,13 @@
         if (history.length > 1) {
             history.back();
         } else {
-            // যদি কোনো হিস্ট্রি না থাকে, তাহলে একটি ফলব্যাক URL এ যেতে পারে
+            // Fallback URL if there's no history
             // window.location.href = '/'; 
         }
     });
 
-    function lockOrientation() {
-      try {
-        if (screen.orientation && typeof screen.orientation.lock === 'function') {
-          screen.orientation.lock('landscape').catch(err => {});
-        }
-      } catch (e) { console.warn("Screen orientation lock not supported."); }
-    }
-
-    function unlockOrientation() {
-      try {
-        if (document.fullscreenElement === null && screen.orientation && typeof screen.orientation.unlock === 'function') {
-          screen.orientation.unlock();
-        }
-      } catch (e) { console.warn("Screen orientation unlock not supported."); }
-    }
-    
-    if(player) {
-        player.on('enterfullscreen', () => {
-          document.body.classList.add('app-fullscreen-mode');
-          lockOrientation();
-        });
-        player.on('exitfullscreen', () => {
-          document.body.classList.remove('app-fullscreen-mode');
-          unlockOrientation();
-        });
-    }
+    // --- মুছে ফেলা হয়েছে: কাস্টম ফুলস্ক্রিনের জন্য অপ্রয়োজনীয় ফাংশন এবং ইভেন্ট লিসেনার ---
+    // lockOrientation, unlockOrientation এবং player.on('enterfullscreen'...) ইত্যাদি সব কোড মুছে ফেলা হয়েছে।
     
     // --- Live Viewer Presence System ---
     const activeUsersRef = ref(db, 'active_users');
@@ -308,7 +274,7 @@
     // --- Fetch and Render Server Buttons from Firebase ---
     const serversRef = ref(db, 'servers');
     onValue(serversRef, (snapshot) => {
-        serverButtonsContainer.innerHTML = ''; // আগের বাটনগুলো মুছে ফেলুন
+        serverButtonsContainer.innerHTML = ''; 
         const servers = snapshot.val();
         
         if (!servers) {
@@ -316,8 +282,6 @@
             return;
         }
 
-        // Object কে Array তে রূপান্তর করে order অনুযায়ী সাজান
-        // এখানে key সহ নেওয়া হচ্ছে যা URL এ ব্যবহার করা হবে
         const sortedServers = Object.entries(servers).sort(([, a], [, b]) => a.order - b.order);
 
         sortedServers.forEach(([key, server]) => {
@@ -325,7 +289,7 @@
             button.className = 'server-btn';
             button.dataset.url = server.url;
             button.dataset.type = server.type;
-            button.dataset.key = key; // Firebase এর ইউনিক key স্টোর করা হলো
+            button.dataset.key = key;
             button.innerHTML = `
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
                 ${server.name}
@@ -333,7 +297,6 @@
             serverButtonsContainer.appendChild(button);
         });
 
-        // নতুন তৈরি করা বাটনগুলোতে ইভেন্ট লিসেনার যোগ করুন
         const allServerButtons = document.querySelectorAll('.server-btn');
         allServerButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -343,7 +306,6 @@
                 this.classList.add('active');
                 
                 loadVideo(this.dataset.url, this.dataset.type);
-                // URL আপডেট করা হচ্ছে কিন্তু নতুন হিস্ট্রি এন্ট্রি তৈরি হচ্ছে না
                 updateUrlForServer(this.dataset.key); 
             });
         });
@@ -357,13 +319,11 @@
             initialButtonToActivate = document.querySelector(`.server-btn[data-key="${serverKeyFromUrl}"]`);
         }
         
-        // যদি URL এ কোনো সার্ভার কী না থাকে অথবা সেই কী এর কোনো বাটন না পাওয়া যায়
         if (!initialButtonToActivate) {
-            initialButtonToActivate = document.querySelector('.server-btn'); // প্রথম বাটনটি সিলেক্ট করুন
+            initialButtonToActivate = document.querySelector('.server-btn');
         }
 
         if (initialButtonToActivate) {
-            // .click() ব্যবহার করে ইভেন্ট ট্রিগার করা হচ্ছে
             initialButtonToActivate.click(); 
         }
 
