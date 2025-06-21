@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ধামাকা প্লেয়ার | উন্নত ফুলস্ক্রিন</title>
+  
+  <!-- 1. পরিবর্তন করা হয়েছে: নতুন Google Font (Hind Siliguri) যোগ করা হয়েছে -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- 2. Plyr.io Player এর CSS -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  
+  <!-- 3. HLS.js এবং Plyr.io এর JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+  <style>
+    /* --- আপনার দেওয়া সকল CSS এখানে থাকবে --- */
+    /* --- ডিজাইন এবং ভ্যারিয়েবল --- */
+    :root {
+      --primary-accent: #00ff8c;
+      --primary-gradient: linear-gradient(45deg, #00ff8c, #00c66d);
+      --dark-bg-1: #0d0d0d;
+      --dark-bg-2: #1a1a1a;
+      --dark-bg-3: #2a2a2a;
+      --text-color: #e0e0e0;
+      --text-muted: #888;
+      --border-color: #333;
+    }
+    /* --- বেসিক স্টাইল --- */
+    * { box-sizing: border-box; }
+    html { background-color: var(--dark-bg-1); }
+    body {
+      margin: 0; padding: 0; width: 100vw; height: 100vh;
+      background-color: var(--dark-bg-1);
+      /* পরিবর্তন করা হয়েছে: নতুন ফন্ট প্রয়োগ করা হয়েছে */
+      font-family: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex; flex-direction: column;
+      color: var(--text-color);
+    }
+    .player-wrapper {
+      width: 100%; max-width: 450px; height: 100%;
+      margin: 0 auto;
+      display: flex; flex-direction: column;
+      background-color: var(--dark-bg-1);
+    }
+    /* --- উপরের বার --- */
+    .top-bar {
+      display: flex; align-items: center;
+      padding: 12px 10px;
+      flex-shrink: 0;
+      gap: 12px;
+      z-index: 10;
+    }
+    .back-arrow {
+      cursor: pointer; flex-shrink: 0; padding: 6px;
+      border-radius: 50%; transition: background-color 0.2s ease;
+    }
+    .back-arrow:hover { background-color: var(--dark-bg-2); }
+    .back-arrow .icon { width: 24px; height: 24px; fill: #fff; }
+    /* --- সার্ভার বাটন (প্রিমিয়াম লুক) --- */
+    .server-buttons-container {
+      flex-grow: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .server-buttons-container::before,
+    .server-buttons-container::after {
+      content: ''; position: absolute; top: 0; bottom: 0;
+      width: 20px; z-index: 2; pointer-events: none;
+    }
+    .server-buttons-container::before {
+      left: 0;
+      background: linear-gradient(to right, var(--dark-bg-1), transparent);
+    }
+    .server-buttons-container::after {
+      right: 0;
+      background: linear-gradient(to left, var(--dark-bg-1), transparent);
+    }
+    .server-buttons {
+      display: flex; gap: 10px;
+      overflow-x: auto; scrollbar-width: none;
+      padding: 5px 15px; 
+    }
+    .server-buttons::-webkit-scrollbar { display: none; }
+    .server-btn { 
+      background: var(--dark-bg-2); color: var(--text-color); 
+      border: 1px solid var(--border-color); border-radius: 20px; 
+      padding: 8px 16px; font-size: 14px; font-weight: 500; 
+      cursor: pointer; transition: all 0.3s ease;
+      white-space: nowrap; flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .server-btn .icon { width: 16px; height: 16px; stroke: var(--text-muted); transition: stroke 0.3s ease; }
+    .server-btn:hover { border-color: var(--primary-accent); }
+    .server-btn.active { 
+      background: var(--primary-gradient); border-color: var(--primary-accent);
+      color: #000; font-weight: 600;
+      box-shadow: 0 0 15px rgba(0, 255, 140, 0.3);
+    }
+    .server-btn.active .icon { stroke: #000; }
+    /* --- ভিডিও এরিয়া --- */
+    .video-area {
+      width: 100%;
+      aspect-ratio: 16 / 9; 
+      position: relative;
+      background-color: #000;
+      flex-shrink: 0;
+    }
+    .plyr-container, .iframe-container {
+        width: 100%; height: 100%;
+        position: absolute; top: 0; left: 0;
+    }
+    .iframe-container iframe {
+        width: 100%; height: 100%; border: none;
+    }
+    /* --- ইমেজ কন্টেইনার --- */
+    .promo-image-container {
+        padding: 0 10px;
+        margin-top: 24px;
+        flex-shrink: 0;
+    }
+    .promo-image-container img {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+    /* --- Plyr প্লেয়ার কাস্টমাইজেশন --- */
+    :root {
+        --plyr-color-main: var(--primary-accent);
+        --plyr-control-radius: 10px;
+        --plyr-font-family: inherit;
+    }
+    .plyr--video .plyr__control--overlaid {
+      background: rgba(0, 0, 0, 0.6); width: 80px; height: 80px;
+      border-radius: 50%; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      transition: all 0.2s ease;
+    }
+    .plyr--video .plyr__control--overlaid:hover { background: var(--primary-accent); }
+    .plyr--video .plyr__control--overlaid svg { left: 55%; }
+
+    /* --- মুছে ফেলা হয়েছে: কাস্টম ফুলস্ক্রিনের জন্য অপ্রয়োজনীয় CSS --- */
+    /* body.app-fullscreen-mode সম্পর্কিত সব স্টাইল মুছে ফেলা হয়েছে */
+
+  </style>
+</head>
+<body>
+
+  <div class="player-wrapper">
+    <div class="top-bar">
+      <a class="back-arrow" id="backButton" title="Go Back">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+      </a>
+      
+      <div class="server-buttons-container">
+        <div class="server-buttons" id="server-buttons">
+            <p style="padding: 10px; color: var(--text-muted);">সার্ভার লোড হচ্ছে...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-area">
+      <div class="plyr-container">
+          <video id="player" playsinline controls></video>
+      </div>
+      <div class="iframe-container" style="display: none;">
+          <iframe allow="autoplay; fullscreen; picture-in-picture" allowfullscreen scrolling="no"></iframe>
+      </div>
+    </div>
+    
+    <div class="promo-image-container">
+        <img src="https://i.postimg.cc/7L72pcXz/IMG-20250614-094453.png" alt="Promotional Banner">
+    </div>
+  </div>
+
+  <!-- Firebase SDK (Modular) -->
+  <script type="module">
+    // Firebase SDK ফাংশন ইম্পোর্ট করুন
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, push, onDisconnect } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+    // আপনার Firebase কনফিগারেশন
+    const firebaseConfig = {
+      apiKey: "AIzaSyAb8YsPMOY53GxiycCL6G0MPZdgWe3nnyY",
+      authDomain: "movie-92659.firebaseapp.com",
+      databaseURL: "https://movie-92659-default-rtdb.firebaseio.com",
+      projectId: "movie-92659",
+      storageBucket: "movie-92659.firebasestorage.app",
+      messagingSenderId: "1090734362509",
+      appId: "1:1090734362509:web:86be5583f6e8fcfdfa77c4",
+      measurementId: "G-XF1TEP0DSJ"
+    };
+
+    // Firebase চালু করুন
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // --- DOM Elements ---
+    const serverButtonsContainer = document.getElementById('server-buttons');
+    const plyrContainer = document.querySelector('.plyr-container');
+    const iframeContainer = document.querySelector('.iframe-container');
+    const videoElement = document.getElementById('player');
+    const iframeElement = iframeContainer.querySelector('iframe');
+    const backButton = document.getElementById('backButton');
+    
+    let hlsInstance = null;
+    let player = null;
+
+    // --- Player Initialization and Functions ---
+    try {
+      player = new Plyr(videoElement, {
+        captions: { active: true, update: true, language: 'en' },
+        // পরিবর্তন করা হয়েছে: ফুলস্ক্রিন অপশন থেকে fallback: true বাদ দেওয়া হয়েছে
+        // এটি এখন প্লেয়ারের নিজস্ব ফুলস্ক্রিন ব্যবহার করবে।
+        fullscreen: { enabled: true, iosNative: true },
+        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+      });
+    } catch(e) { console.error("Plyr initialization failed:", e); }
+    
+    function loadVideo(url, type) {
+      if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+      if (player) { player.stop(); }
+      iframeElement.src = 'about:blank';
+
+      if (type === 'm3u8') {
+        iframeContainer.style.display = 'none';
+        plyrContainer.style.display = 'block';
+        if (Hls.isSupported() && player) {
+          hlsInstance = new Hls();
+          hlsInstance.loadSource(url);
+          hlsInstance.attachMedia(videoElement);
+          hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => player.play());
+        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+          videoElement.src = url;
+          videoElement.addEventListener('loadedmetadata', () => { if(player) player.play(); });
+        }
+      } else { // 'iframe'
+        plyrContainer.style.display = 'none';
+        iframeContainer.style.display = 'block';
+        iframeElement.src = url;
+      }
+    }
+
+    // --- ব্যাক বাটন সমস্যার সমাধান: URL স্টেট ম্যানেজমেন্ট ---
+    function updateUrlForServer(serverKey) {
+        const url = new URL(window.location);
+        url.searchParams.set('server', serverKey);
+        history.replaceState(null, '', url.toString());
+    }
+
+    backButton.addEventListener('click', () => {
+        if (history.length > 1) {
+            history.back();
+        } else {
+            // Fallback URL if there's no history
+            // window.location.href = '/'; 
+        }
+    });
+
+    // --- মুছে ফেলা হয়েছে: কাস্টম ফুলস্ক্রিনের জন্য অপ্রয়োজনীয় ফাংশন এবং ইভেন্ট লিসেনার ---
+    // lockOrientation, unlockOrientation এবং player.on('enterfullscreen'...) ইত্যাদি সব কোড মুছে ফেলা হয়েছে।
+    
+    // --- Live Viewer Presence System ---
+    const activeUsersRef = ref(db, 'active_users');
+    const myConnectionRef = push(activeUsersRef);
+    onDisconnect(myConnectionRef).remove();
+    set(myConnectionRef, true);
+
+    // --- Fetch and Render Server Buttons from Firebase ---
+    const serversRef = ref(db, 'servers');
+    onValue(serversRef, (snapshot) => {
+        serverButtonsContainer.innerHTML = ''; 
+        const servers = snapshot.val();
+        
+        if (!servers) {
+            serverButtonsContainer.innerHTML = '<p style="padding: 10px; color: var(--text-muted);">কোনো সার্ভার পাওয়া যায়নি।</p>';
+            return;
+        }
+
+        const sortedServers = Object.entries(servers).sort(([, a], [, b]) => a.order - b.order);
+
+        sortedServers.forEach(([key, server]) => {
+            const button = document.createElement('button');
+            button.className = 'server-btn';
+            button.dataset.url = server.url;
+            button.dataset.type = server.type;
+            button.dataset.key = key;
+            button.innerHTML = `
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+                ${server.name}
+            `;
+            serverButtonsContainer.appendChild(button);
+        });
+
+        const allServerButtons = document.querySelectorAll('.server-btn');
+        allServerButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.classList.contains('active')) return;
+                
+                allServerButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                loadVideo(this.dataset.url, this.dataset.type);
+                updateUrlForServer(this.dataset.key); 
+            });
+        });
+
+        // --- পেজ লোড হওয়ার পর সঠিক সার্ভারটি চালু করার নতুন লজিক ---
+        const params = new URLSearchParams(window.location.search);
+        const serverKeyFromUrl = params.get('server');
+        let initialButtonToActivate = null;
+
+        if (serverKeyFromUrl) {
+            initialButtonToActivate = document.querySelector(`.server-btn[data-key="${serverKeyFromUrl}"]`);
+        }
+        
+        if (!initialButtonToActivate) {
+            initialButtonToActivate = document.querySelector('.server-btn');
+        }
+
+        if (initialButtonToActivate) {
+            initialButtonToActivate.click(); 
+        }
+
+    }, (error) => {
+        console.error("Firebase read failed: " + error.name);
+        serverButtonsContainer.innerHTML = '<p style="padding: 10px; color: var(--text-muted);">সার্ভার লোড হতে সমস্যা হচ্ছে।</p>';
+    });
+
+  </script>
+
+</body>
+</html>
