@@ -1,35 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heads of State (2025)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: #121212; color: #ffffff; }
-        .video-container { width: 100%; background-color: #000; }
-        .main-video-player { width: 100%; height: auto; display: block; background-color: #000; }
-        .description-container { padding: 25px 20px; max-width: 900px; margin: 0 auto; }
-        .description-container h1 { font-size: 2.5em; margin: 0; color: #00e676; }
-        .description-container h2 { font-size: 1.5em; margin-top: 20px; border-bottom: 2px solid #333; padding-bottom: 6px; color: #f5f5f5; }
-        .description-container p { font-size: 1em; line-height: 1.7; margin-top: 12px; color: #cccccc; }
-        @media (max-width: 600px) { .description-container h1 { font-size: 1.8em; } .description-container h2 { font-size: 1.3em; } .description-container p { font-size: 0.95em; } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Heads of State (2025)</title>
+
+  <!-- Fonts: Poppins + Space Grotesk (PG Grotesque Alternative) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    .video-container {
+      width: 100%;
+      background-color: #000;
+    }
+
+    .main-video-player {
+      width: 100%;
+      height: auto;
+      display: block;
+      background-color: #000;
+    }
+
+    .description-container {
+      padding: 25px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .description-container h1 {
+      font-size: 2.5em;
+      margin: 0;
+      color: #00e676;
+    }
+
+    .description-container h2 {
+      font-size: 1.5em;
+      margin-top: 20px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 6px;
+      color: #f5f5f5;
+    }
+
+    .description-container p {
+      font-size: 1em;
+      line-height: 1.7;
+      margin-top: 12px;
+      color: #cccccc;
+    }
+
+    .credit-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3em;
+      margin-top: 25px;
+      cursor: pointer;
+      display: inline-block;
+      color: orange;
+      transition: transform 0.3s ease;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-12px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .description-container h1 { font-size: 1.8em; }
+      .description-container h2 { font-size: 1.3em; }
+      .description-container p { font-size: 0.95em; }
+    }
+  </style>
 </head>
 <body>
-    <div class="video-container">
-        <video class="main-video-player" controls autoplay>
-            <source src="https://fs71.bigwarp.io/v/03/00641/pe9aym9yhizr_x/x.mp4?t=C0MAmBdxsG7RKGYJQ97y4fGyXcdfm_ygRyEKY9MocgQ&s=1751811288&e=43200&f=3206585&sp=1000&i=0.0&kmnr=962054345" type="video/mp4">
-            Sorry, your browser does not support the video playback.
-        </video>
-    </div>
-    <div class="description-container">
-        <h1>Heads of State (2025)</h1></h1>
-        <h2>Overview: the u.s president will derringer and british prime minister sam clarke have a not so friendly and very public rivalry however when air force one gets shot down over enemy territory they find themselves on the run and working together to thwart a global conspiracy that threatens the entire free world.</h2> 
-        <p style="font-size: 0.95em; color: #999; margin-top: 30px; border-top: 1px solid #333; padding-top: 15px;">
-            <strong>Disclaimer:</strong> The content provided is for informational and entertainment purposes only. All videos belong to their respective copyright owners. We do not claim any ownership.
-        <h3><strong>by: mohammed rafid</strong></h3>   
-        </p>
-    </div>
+  <div class="video-container">
+    <video class="main-video-player" controls autoplay>
+      <source src="https://fs71.bigwarp.io/v/03/00641/pe9aym9yhizr_x/x.mp4?t=C0MAmBdxsG7RKGYJQ97y4fGyXcdfm_ygRyEKY9MocgQ&s=1751811288&e=43200&f=3206585&sp=1000&i=0.0&kmnr=962054345" type="video/mp4">
+      Sorry, your browser does not support the video playback.
+    </video>
+  </div>
+
+  <div class="description-container">
+    <h1>Heads of State (2025)</h1>
+
+    <h2>Overview:</h2>
+    <p>When Air Force One is taken down over hostile territory, U.S. President Will Derringer and British Prime Minister Sam Clarke — bitter rivals on the world stage — are forced to team up. On the run with no backup and surrounded by enemies, they must survive the odds and unravel a high-stakes conspiracy that threatens global security. Politics, power, and pride collide in this explosive action-thriller.</p>
+
+    <p style="font-size: 0.95em; color: #999; margin-top: 30px; border-top: 1px solid #333; padding-top: 15px;">
+      <strong>Disclaimer:</strong> The content provided is for informational and entertainment purposes only. All videos belong to their respective copyright owners. We do not claim any ownership.
+    </p>
+
+    <div class="credit-text" id="creditText">by: mohammed rafid</div>
+  </div>
+
+  <script>
+    const credit = document.getElementById("creditText");
+
+    credit.addEventListener("mousedown", () => {
+      credit.style.transform = "translateY(-50px)";
+    });
+
+    credit.addEventListener("mouseup", () => {
+      credit.style.transform = "translateY(0)";
+    });
+
+    credit.addEventListener("touchstart", () => {
+      credit.style.transform = "translateY(-50px)";
+    });
+
+    credit.addEventListener("touchend", () => {
+      credit.style.transform = "translateY(0)";
+    });
+  </script>
 </body>
 </html>
