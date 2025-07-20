@@ -1,34 +1,336 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aynabaji (2016) - Full Movie</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>প্রফেশনাল ভিডিও প্লেয়ার (সংশোধিত)</title>
+    <!-- সুন্দর ফন্টের জন্য গুগল ফন্টস -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+
     <style>
-        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: #121212; color: #ffffff; }
-        .video-container { width: 100%; background-color: #000; }
-        .main-video-player { width: 100%; height: auto; display: block; background-color: #000; }
-        .description-container { padding: 25px 20px; max-width: 900px; margin: 0 auto; }
-        .description-container h1 { font-size: 2.5em; margin: 0; color: #00e676; }
-        .description-container h2 { font-size: 1.5em; margin-top: 20px; border-bottom: 2px solid #333; padding-bottom: 6px; color: #f5f5f5; }
-        .description-container p { font-size: 1em; line-height: 1.7; margin-top: 12px; color: #cccccc; }
-        @media (max-width: 600px) { .description-container h1 { font-size: 1.8em; } .description-container h2 { font-size: 1.3em; } .description-container p { font-size: 0.95em; } }
+        /* === আপনার মূল স্টাইল, কোনো পরিবর্তন করা হয়নি === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #121212; /* ডার্ক ব্যাকগ্রাউন্ড */
+            font-family: 'Poppins', sans-serif;
+            color: white;
+        }
+
+        #player-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        #main-video {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+            z-index: 20;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        #controls-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.5) 100%);
+            opacity: 1;
+            transition: opacity 0.4s ease-in-out;
+            z-index: 10;
+        }
+
+        #controls-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .top-controls, .bottom-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+        
+        .server-selector {
+            position: relative;
+        }
+
+        #current-server-btn {
+            background-color: rgba(44, 44, 44, 0.8);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        #current-server-btn:hover {
+            background-color: rgba(66, 66, 66, 0.9);
+        }
+
+        #server-list {
+            position: absolute;
+            /* ***ভুলবশত পরিবর্তন করা হয়েছিল, এখন আপনার মূল কোডের মতোই আছে*** */
+            top: calc(100% + 5px); 
+            right: 0;
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 5px;
+            list-style: none;
+            padding: 5px;
+            display: none;
+            width: 120px;
+            z-index: 30;
+        }
+
+        #server-list button {
+            width: 100%;
+            background: none;
+            border: none;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 3px;
+        }
+
+        #server-list button:hover {
+            background-color: rgba(80, 80, 80, 0.8);
+        }
+        
+        #live-indicator {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        #live-indicator span {
+            width: 8px;
+            height: 8px;
+            background-color: #ff3b30;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        #logo-container {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            z-index: 15;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        #logo-container img {
+            height: 30px;
+            width: auto;
+            opacity: 0.8;
+        }
+
+        #controls-overlay.hidden + #logo-container {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div class="video-container">
-        <video class="main-video-player" controls autoplay>
-            <source src="https://pixeldra.in/api/file/3gCYj3Z4?download" type="video/mp4">
-            Sorry, your browser does not support the video playback.
-        </video>
+
+    <!-- আপনার মূল HTML কাঠামো, কোনো পরিবর্তন করা হয়নি -->
+    <div id="player-container">
+        <video id="main-video" src="https://tvsen5.aynaott.com/YNMn5kZz8aLm/tracks-v1a1/mono.ts.m3u8" playsinline></video>
+        
+        <div id="loader"></div>
+        
+        <div id="controls-overlay">
+            <div class="top-controls">
+                <div></div>
+                <div class="server-selector">
+                    <button id="current-server-btn">Server 1</button>
+                    <ul id="server-list">
+                        <li><button data-server="Server 1" data-url="https://tvsen5.aynaott.com/YNMn5kZz8aLm/tracks-v1a1/mono.ts.m3u8">Server 1</button></li>
+                        <li><button data-server="Server 2" data-url="আপনার ভিডিও লিংক ২">Server 2</button></li>
+                        <li><button data-server="Server 3" data-url="আপনার ভিডিও লিংক ৩">Server 3</button></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="bottom-controls">
+                <div id="live-indicator">
+                    <span></span>Live
+                </div>
+            </div>
+        </div>
+
+        <div id="logo-container">
+            <img src="আপনার লোগো লিংক" alt="Logo">
+        </div>
     </div>
-    <div class="description-container">
-        <h1>Aynabaji (2016)</h1>
-        <h2>by: mohammed rafid </h2> 
-        <p style="font-size: 0.95em; color: #999; margin-top: 30px; border-top: 1px solid #333; padding-top: 15px;">
-            <strong>Disclaimer:</strong> The content provided is for informational and entertainment purposes only. All videos belong to their respective copyright owners. We do not claim any ownership.
-        </p>
-    </div>
+
+    <script>
+        // === আপনার মূল স্ক্রিপ্ট ===
+        const playerContainer = document.getElementById('player-container');
+        const video = document.getElementById('main-video');
+        const loader = document.getElementById('loader');
+        const controlsOverlay = document.getElementById('controls-overlay');
+        const logoContainer = document.getElementById('logo-container');
+        const serverBtn = document.getElementById('current-server-btn');
+        const serverList = document.getElementById('server-list');
+        const serverOptions = document.querySelectorAll('#server-list button');
+
+        let controlsTimeout;
+
+        function showControls() {
+            controlsOverlay.classList.remove('hidden');
+            resetControlsTimeout();
+        }
+
+        function hideControls() {
+            if (!video.paused && serverList.style.display !== 'block') {
+                controlsOverlay.classList.add('hidden');
+            }
+        }
+
+        function resetControlsTimeout() {
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(hideControls, 3000);
+        }
+
+        playerContainer.addEventListener('mousemove', () => {
+            showControls();
+        });
+
+        playerContainer.addEventListener('mouseleave', () => {
+            if (serverList.style.display !== 'block') {
+               hideControls();
+            }
+        });
+
+        // *** সমাধান ২: ক্লিক করলে পজ হওয়া বন্ধ করা হয়েছে ***
+        playerContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.server-selector')) {
+                return;
+            }
+            
+            if (video.paused) {
+                video.play();
+            } 
+            // else { video.pause(); } // <--- এই লাইনটি মুছে ফেলা হয়েছে
+            
+            showControls();
+        });
+        
+        video.addEventListener('play', () => {
+            resetControlsTimeout();
+        });
+
+        video.addEventListener('pause', () => {
+            clearTimeout(controlsTimeout);
+            controlsOverlay.classList.remove('hidden');
+        });
+
+        video.addEventListener('waiting', () => {
+            loader.style.display = 'block';
+        });
+
+        video.addEventListener('playing', () => {
+            loader.style.display = 'none';
+        });
+        video.addEventListener('canplay', () => {
+            loader.style.display = 'none';
+        });
+
+        serverBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (serverList.style.display === 'block') {
+                serverList.style.display = 'none';
+            } else {
+                serverList.style.display = 'block';
+                clearTimeout(controlsTimeout);
+            }
+        });
+        
+        serverOptions.forEach(button => {
+            button.addEventListener('click', () => {
+                const newUrl = button.dataset.url;
+                const serverName = button.dataset.server;
+                
+                video.src = newUrl;
+                video.play(); // সার্ভার পরিবর্তনের পর প্লে করা
+                
+                serverBtn.textContent = serverName;
+                serverList.style.display = 'none';
+                resetControlsTimeout();
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.server-selector')) {
+                serverList.style.display = 'none';
+            }
+        });
+        
+        // *** সমাধান ১: পেজ লোড হওয়ার সাথে সাথে ভিডিও প্লে করার চেষ্টা ***
+        // এই অংশটি যোগ করা হয়েছে
+        window.addEventListener('load', () => {
+            // আধুনিক ব্রাউজারগুলো শব্দসহ অটো-প্লেতে বাধা দেয়। তাই আমরা চেষ্টা করবো।
+            // ব্যবহারকারীকে হয়তো প্রথমবার ক্লিক করে প্লে করতে হতে পারে।
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Auto-play was prevented by the browser.");
+                    // প্লে না হলে কন্ট্রোলগুলো দেখিয়ে দেওয়া হবে যাতে ব্যবহারকারী ক্লিক করতে পারে
+                    controlsOverlay.classList.remove('hidden');
+                });
+            }
+        });
+
+        // প্রাথমিকভাবে কন্ট্রোল দেখানোর জন্য
+        showControls();
+    </script>
 </body>
 </html>
