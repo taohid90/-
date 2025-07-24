@@ -25,8 +25,7 @@
 
         /* কন্ট্রোল ও অন্যান্য উপাদানের জন্য স্মুথ ট্রানজিশন */
         #player-container .controls-container,
-        #player-container .loading-spinner,
-        #player-container #watermark-logo {
+        #player-container .loading-spinner {
             transition: opacity 0.3s ease-in-out;
         }
         
@@ -140,28 +139,24 @@
                     </div>
                 </div>
                 
-                <!-- Right Controls -->
+                <!-- Right Controls (এখন খালি) -->
                 <div class="flex items-center space-x-4">
-                     <button id="fullscreenBtn" aria-label="Toggle Fullscreen"><i id="fullscreenIcon" class="fas fa-expand text-xl"></i></button>
+                     <!-- ফুলস্ক্রিন বাটনটি এখান থেকে সরিয়ে দেওয়া হয়েছে -->
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Watermark Logo -->
-    <img id="watermark-logo" src="" alt="Logo" class="absolute bottom-20 left-5 h-8 opacity-70 group-hover:opacity-0 pointer-events-none" />
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- আপনার লিংক ও লোগো এখানে পরিবর্তন করুন ---
+    // --- আপনার লিংক এখানে পরিবর্তন করুন ---
     const videoSources = {
         'T Sports': 'https://tvsen6.aynaott.com/tsportsfhd/tracks-v1a1/mono.ts.m3u8',
         'GTV': 'https://tvsen5.aynaott.com/PtvSports/index.m3u8',
         'Sony 1': 'https://bdiptv.net/PTV/myStream/playlist.m3u8?wmsAuthSign=c2VydmVyX3RpbWU9OC8xNC8yMDI0IDEwOjIxOjEyIFBNJmhhc2hfdmFsdWU9MWI3ZWg3U1o0dVVidTkwOWpTWE15QT09JnZhbGlkbWludXRlcz0xMjAmc3RybV9sZW49MA==',
     };
-    const logoUrl = 'https://i.ibb.co/3k03bY3/logo-placeholder.png'; 
     const initialServer = 'T Sports'; // প্রথম কোন সার্ভারটি চলবে
 
     // --- HTML এলিমেন্ট নির্বাচন ---
@@ -179,10 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalDurationEl = document.getElementById('totalDuration');
     const progressContainer = document.getElementById('progress-container');
     const progressPlayed = document.getElementById('progress-played');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const fullscreenIcon = document.getElementById('fullscreenIcon');
     const loadingSpinner = document.getElementById('loading-spinner');
-    const watermarkLogo = document.getElementById('watermark-logo');
     const serverButtonsContainer = document.getElementById('server-buttons-container');
     const errorMessage = document.getElementById('error-message');
 
@@ -198,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const button = document.createElement('button');
             button.innerText = name;
             button.dataset.serverName = name;
+            // ডিফল্ট স্টাইল - সাদা লেখা, ট্রান্সলুসেন্ট কালো ব্যাকগ্রাউন্ড
             button.className = 'server-btn bg-black/40 text-white backdrop-blur-sm rounded-full px-4 py-1.5 text-sm transition-all duration-200 hover:bg-black/60';
             button.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -207,14 +200,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
+    // সক্রিয় সার্ভার বাটন হাইলাইট করা
     const updateActiveServerButton = (activeName) => {
         document.querySelectorAll('.server-btn').forEach(btn => {
             if (btn.dataset.serverName === activeName) {
-                btn.classList.add('bg-white', 'text-black', 'font-bold');
-                btn.classList.remove('bg-black/40', 'text-white');
+                // সক্রিয় বাটন: লাল ব্যাকগ্রাউন্ড, সাদা ও বোল্ড লেখা
+                btn.classList.add('bg-red-500', 'font-bold');
+                btn.classList.remove('bg-black/40');
             } else {
-                btn.classList.remove('bg-white', 'text-black', 'font-bold');
-                btn.classList.add('bg-black/40', 'text-white');
+                // নিষ্ক্রিয় বাটন: ডিফল্ট স্টাইল
+                btn.classList.remove('bg-red-500', 'font-bold');
+                btn.classList.add('bg-black/40');
             }
         });
     };
@@ -337,20 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateVolume();
         updateVolumeIcon();
     };
-
-    const toggleFullscreen = () => {
-        if (!document.fullscreenElement) {
-            playerContainer.requestFullscreen().catch(err => {
-                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    };
-
-    const updateFullscreenIcon = () => {
-        fullscreenIcon.className = document.fullscreenElement ? 'fas fa-compress text-xl' : 'fas fa-expand text-xl';
-    };
+    
+    // ফুলস্ক্রিন ফাংশনালিটি মুছে ফেলা হয়েছে
 
     const showLoading = (isLoading) => {
         loadingSpinner.style.display = isLoading ? 'block' : 'none';
@@ -385,9 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
     volumeSlider.addEventListener('input', updateVolume);
     videoPlayer.addEventListener('volumechange', updateVolumeIcon);
     
-    fullscreenBtn.addEventListener('click', toggleFullscreen);
-    document.addEventListener('fullscreenchange', updateFullscreenIcon);
-    
     progressContainer.addEventListener('click', handleSeek);
 
     videoPlayer.addEventListener('waiting', () => showLoading(true));
@@ -407,10 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'KeyM':
                 toggleMute();
                 break;
-
-            case 'KeyF':
-                toggleFullscreen();
-                break;
+            // 'F' শর্টকাট মুছে ফেলা হয়েছে
             case 'ArrowRight':
                 videoPlayer.currentTime += 5;
                 break;
@@ -421,7 +399,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- প্রাথমিক সেটআপ ---
-    watermarkLogo.src = logoUrl;
     createServerButtons();
     initializePlayer(initialServer);
     updateVolumeIcon();
