@@ -3,104 +3,266 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>Perfect Fullscreen Video Player</title>
+    <title>Advanced HLS Video Player</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet"/>
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet"/>
+    <!-- HLS.js Library (সবচেয়ে গুরুত্বপূর্ণ) -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
     <style>
-        /* স্মুথ ট্রানজিশনের জন্য কাস্টম স্টাইল */
-        #player-container .controls-overlay, #player-container .watermark-logo {
+        /* 기본 ব্রাউজার কন্ট্রোল হাইড করা */
+        video::-webkit-media-controls {
+            display: none !important;
+        }
+        video::-moz-media-controls {
+            display: none !important;
+        }
+        video::media-controls {
+            display: none !important;
+        }
+
+        /* কন্ট্রোল ও অন্যান্য উপাদানের জন্য স্মুথ ট্রানজিশন */
+        #player-container .controls-container,
+        #player-container .loading-spinner,
+        #player-container #watermark-logo {
             transition: opacity 0.3s ease-in-out;
         }
-        /* নিশ্চিত করা যে কোনো স্ক্রোলবার দেখা যাবে না */
+        
+        /* শরীর থেকে স্ক্রোলবার লুকানো */
         body {
             overflow: hidden;
         }
+
+        /* ভলিউম স্লাইডারের জন্য কাস্টম স্টাইল */
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 0;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 5px;
+            outline: none;
+            transition: width 0.2s ease-in-out, opacity 0.2s ease-in-out;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .volume-container:hover .volume-slider {
+            width: 80px;
+            opacity: 1;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .volume-slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        /* প্রোগ্রেস বারের জন্য স্টাইল */
+        .progress-bar {
+            height: 4px;
+            transition: height 0.1s ease-in-out;
+        }
+        #player-container:hover .progress-bar {
+            height: 6px; /* হোভার করলে বারটি মোটা হবে */
+        }
     </style>
 </head>
-<body class="bg-black">
+<body class="bg-black flex items-center justify-center min-h-screen">
 
-<!-- Main Player Container - now covers the entire screen -->
-<div id="player-container" class="fixed inset-0 w-screen h-screen bg-black flex items-center justify-center">
+<!-- Main Player Container -->
+<div id="player-container" class="relative w-screen h-screen bg-black flex items-center justify-center group">
     
-    <!-- Video Element - uses object-contain to fit perfectly without cropping -->
-    <video id="videoPlayer" class="w-full h-full object-contain" loop>
-        আপনার ব্রাউজার ভিডিও ট্যাগ সমর্থন করে না।
-    </video>
+    <!-- Video Element -->
+    <video id="videoPlayer" class="w-full h-full object-contain"></video>
 
-    <!-- Controls Overlay (এই অংশটি হাইড/শো হবে) -->
-    <div id="controls-overlay" class="absolute inset-0 flex flex-col justify-between opacity-0 pointer-events-none">
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="absolute text-white text-4xl pointer-events-none">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    
+    <!-- Error Message Display -->
+    <div id="error-message" class="absolute text-white bg-red-600/80 p-4 rounded-lg hidden">
+        দুঃখিত, এই স্ট্রিমটি চালাতে সমস্যা হচ্ছে।
+    </div>
+
+
+    <!-- Controls Overlay Container -->
+    <div id="controls-container" class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex flex-col justify-between pointer-events-none">
         
         <!-- Top Controls (Server Selection) -->
-        <div class="p-5 bg-gradient-to-b from-black/50 to-transparent">
-            <div class="flex items-center space-x-3">
-                <button id="server1Btn" class="server-btn bg-white text-black font-bold rounded-full px-4 py-1.5 text-sm shadow-lg transition-all duration-200 pointer-events-auto">
-                    T SPORTS
-                </button>
-                <button id="server2Btn" class="server-btn bg-black/40 text-white backdrop-blur-sm rounded-full px-4 py-1.5 text-sm transition-all duration-200 hover:bg-black/60 pointer-events-auto">
-                    Great family TV
-                </button>
+        <div class="p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-auto">
+            <div id="server-buttons-container" class="flex items-center space-x-3">
+                <!-- সার্ভার বাটনগুলো এখানে জাভাস্ক্রিপ্ট দিয়ে যুক্ত হবে -->
             </div>
         </div>
 
-        <!-- Middle Play/Pause Button -->
-        <div class="flex-grow flex items-center justify-center">
-             <button id="playPauseBtn" aria-label="Play/Pause" class="bg-black/40 text-white rounded-full w-20 h-20 flex items-center justify-center text-4xl focus:outline-none backdrop-blur-sm hover:bg-black/60 hover:scale-110 transition-all duration-300 pointer-events-auto">
-                <i id="playPauseIcon" class="fas fa-play"></i>
+        <!-- Middle Play/Pause Button (বড় বাটন) -->
+        <div class="flex-grow flex items-center justify-center pointer-events-auto">
+             <button id="playPauseBtnCenter" aria-label="Play/Pause" class="text-white rounded-full w-20 h-20 flex items-center justify-center text-4xl focus:outline-none backdrop-blur-sm hover:bg-black/40 hover:scale-110 transition-all duration-300">
+                <i id="playPauseIconCenter" class="fas fa-play"></i>
             </button>
         </div>
 
-        <!-- Bottom Spacer (ডিজাইনের ভারসাম্য রাখার জন্য) -->
-        <div class="h-16"></div>
+        <!-- Bottom Control Bar -->
+        <div class="p-4 bg-gradient-to-t from-black/60 to-transparent pointer-events-auto">
+            <!-- Progress Bar -->
+            <div id="progress-container" class="w-full cursor-pointer mb-2">
+                <div class="progress-bar bg-white/30 rounded-full">
+                    <div id="progress-played" class="bg-red-500 h-full rounded-full" style="width: 0%;"></div>
+                </div>
+            </div>
+            
+            <!-- Main Controls -->
+            <div class="flex items-center justify-between text-white">
+                <!-- Left Controls -->
+                <div class="flex items-center space-x-4">
+                    <button id="playPauseBtn" aria-label="Play/Pause"><i id="playPauseIcon" class="fas fa-play text-xl"></i></button>
+                    
+                    <div class="flex items-center space-x-2 volume-container">
+                        <button id="volumeBtn" aria-label="Mute/Unmute"><i id="volumeIcon" class="fas fa-volume-high text-xl"></i></button>
+                        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="1">
+                    </div>
+                    
+                    <div class="text-sm font-mono">
+                        <span id="currentTime">00:00</span> / <span id="totalDuration">00:00</span>
+                    </div>
+                </div>
+                
+                <!-- Right Controls -->
+                <div class="flex items-center space-x-4">
+                     <button id="fullscreenBtn" aria-label="Toggle Fullscreen"><i id="fullscreenIcon" class="fas fa-expand text-xl"></i></button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Watermark Logo -->
-    <img id="watermark-logo" src="https://i.ibb.co/3k03bY3/logo-placeholder.png" alt="Logo" class="absolute bottom-5 left-5 h-8 opacity-0 pointer-events-none" />
-
+    <img id="watermark-logo" src="" alt="Logo" class="absolute bottom-20 left-5 h-8 opacity-70 group-hover:opacity-0 pointer-events-none" />
 </div>
 
 <script>
-    // --- আপনার লিংকগুলো এখানে পরিবর্তন করুন ---
-    const videoSources = {
-        server1: 'https://tvsen6.aynaott.com/tsportsfhd/tracks-v1a1/mono.ts.m3u8',
-        server2: 'https://tvsen5.aynaott.com/PtvSports/index.m3u8'
-    };
-    const logoUrl = 'https://i.ibb.co/3k03bY3/logo-placeholder.png'; // আপনার লোগোর লিংক
+document.addEventListener('DOMContentLoaded', () => {
 
-    // --- প্রয়োজনীয় HTML এলিমেন্টগুলো সিলেক্ট করা ---
+    // --- আপনার লিংক ও লোগো এখানে পরিবর্তন করুন ---
+    const videoSources = {
+        'T Sports': 'https://tvsen6.aynaott.com/tsportsfhd/tracks-v1a1/mono.ts.m3u8',
+        'GTV': 'https://tvsen5.aynaott.com/PtvSports/index.m3u8',
+        'Sony 1': 'https://bdiptv.net/PTV/myStream/playlist.m3u8?wmsAuthSign=c2VydmVyX3RpbWU9OC8xNC8yMDI0IDEwOjIxOjEyIFBNJmhhc2hfdmFsdWU9MWI3ZWg3U1o0dVVidTkwOWpTWE15QT09JnZhbGlkbWludXRlcz0xMjAmc3RybV9sZW49MA==',
+    };
+    const logoUrl = 'https://i.ibb.co/3k03bY3/logo-placeholder.png'; 
+    const initialServer = 'T Sports'; // প্রথম কোন সার্ভারটি চলবে
+
+    // --- HTML এলিমেন্ট নির্বাচন ---
     const playerContainer = document.getElementById('player-container');
     const videoPlayer = document.getElementById('videoPlayer');
-    const controlsOverlay = document.getElementById('controls-overlay');
+    const controlsContainer = document.getElementById('controls-container');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const playPauseIcon = document.getElementById('playPauseIcon');
-    const server1Btn = document.getElementById('server1Btn');
-    const server2Btn = document.getElementById('server2Btn');
+    const playPauseBtnCenter = document.getElementById('playPauseBtnCenter');
+    const playPauseIconCenter = document.getElementById('playPauseIconCenter');
+    const volumeBtn = document.getElementById('volumeBtn');
+    const volumeIcon = document.getElementById('volumeIcon');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalDurationEl = document.getElementById('totalDuration');
+    const progressContainer = document.getElementById('progress-container');
+    const progressPlayed = document.getElementById('progress-played');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenIcon = document.getElementById('fullscreenIcon');
+    const loadingSpinner = document.getElementById('loading-spinner');
     const watermarkLogo = document.getElementById('watermark-logo');
-    
+    const serverButtonsContainer = document.getElementById('server-buttons-container');
+    const errorMessage = document.getElementById('error-message');
+
+    let hls;
     let controlsTimeout;
-
-    // --- প্রাথমিক সেটআপ ---
-    videoPlayer.src = videoSources.server1;
-    watermarkLogo.src = logoUrl;
-
+    
     // --- ফাংশন ---
-    const showControls = () => {
-        controlsOverlay.classList.remove('opacity-0');
-        watermarkLogo.classList.add('opacity-0');
-        clearTimeout(controlsTimeout);
+
+    // সার্ভার বাটন তৈরি করা
+    const createServerButtons = () => {
+        serverButtonsContainer.innerHTML = '';
+        Object.keys(videoSources).forEach(name => {
+            const button = document.createElement('button');
+            button.innerText = name;
+            button.dataset.serverName = name;
+            button.className = 'server-btn bg-black/40 text-white backdrop-blur-sm rounded-full px-4 py-1.5 text-sm transition-all duration-200 hover:bg-black/60';
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                switchServer(name);
+            });
+            serverButtonsContainer.appendChild(button);
+        });
+    };
+    
+    const updateActiveServerButton = (activeName) => {
+        document.querySelectorAll('.server-btn').forEach(btn => {
+            if (btn.dataset.serverName === activeName) {
+                btn.classList.add('bg-white', 'text-black', 'font-bold');
+                btn.classList.remove('bg-black/40', 'text-white');
+            } else {
+                btn.classList.remove('bg-white', 'text-black', 'font-bold');
+                btn.classList.add('bg-black/40', 'text-white');
+            }
+        });
     };
 
-    const hideControls = () => {
-        if (!videoPlayer.paused) {
-            controlsOverlay.classList.add('opacity-0');
-            watermarkLogo.classList.remove('opacity-0');
+    // HLS প্লেয়ার ইনিশিয়ালাইজ করা
+    const initializePlayer = (serverName) => {
+        const source = videoSources[serverName];
+        showLoading(true);
+        errorMessage.classList.add('hidden');
+
+        if (hls) {
+            hls.destroy();
         }
+
+        if (Hls.isSupported()) {
+            hls = new Hls();
+            hls.loadSource(source);
+            hls.attachMedia(videoPlayer);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                videoPlayer.play();
+            });
+            hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                   showError();
+                }
+            });
+        } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+            videoPlayer.src = source;
+            videoPlayer.addEventListener('loadedmetadata', () => {
+                videoPlayer.play();
+            });
+        } else {
+            showError('আপনার ব্রাউজার HLS সমর্থন করে না।');
+        }
+        updateActiveServerButton(serverName);
+    };
+
+    const switchServer = (serverName) => {
+        initializePlayer(serverName);
     };
     
-    const startHideTimer = () => {
-        clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(hideControls, 3000); // ৩ সেকেন্ড পর হাইড হবে
+    const showError = (message = 'দুঃখিত, এই স্ট্রিমটি চালাতে সমস্যা হচ্ছে।') => {
+        errorMessage.innerText = message;
+        errorMessage.classList.remove('hidden');
+        showLoading(false);
+        if(hls) hls.destroy();
     };
-    
+
     const togglePlayPause = () => {
         if (videoPlayer.paused) {
             videoPlayer.play();
@@ -109,63 +271,162 @@
         }
     };
 
-    const updatePlayPauseIcon = () => {
-        playPauseIcon.className = `fas ${videoPlayer.paused ? 'fa-play' : 'fa-pause'}`;
+    const updatePlayPauseIcons = () => {
+        const iconClass = videoPlayer.paused ? 'fa-play' : 'fa-pause';
+        playPauseIcon.className = `fas ${iconClass} text-xl`;
+        playPauseIconCenter.className = `fas ${iconClass}`;
+        playPauseBtnCenter.style.display = videoPlayer.paused ? 'flex' : 'none';
     };
 
-    const switchServer = (serverKey) => {
-        videoPlayer.src = videoSources[serverKey];
-        videoPlayer.play();
-        const isActive = 'bg-white text-black font-bold';
-        const isInactive = 'bg-black/40 text-white';
-        server1Btn.className = `server-btn rounded-full px-4 py-1.5 text-sm shadow-lg transition-all duration-200 pointer-events-auto ${serverKey === 'server1' ? isActive : isInactive}`;
-        server2Btn.className = `server-btn rounded-full px-4 py-1.5 text-sm transition-all duration-200 pointer-events-auto ${serverKey === 'server2' ? isActive : isInactive}`;
+    const formatTime = (timeInSeconds) => {
+        if (isNaN(timeInSeconds) || timeInSeconds === Infinity) {
+            return '00:00';
+        }
+        const minutes = Math.floor(timeInSeconds / 60);
+        const seconds = Math.floor(timeInSeconds % 60);
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+
+    const updateProgress = () => {
+        const duration = videoPlayer.duration;
+        if (duration && duration !== Infinity) {
+            const percentage = (videoPlayer.currentTime / duration) * 100;
+            progressPlayed.style.width = `${percentage}%`;
+            currentTimeEl.textContent = formatTime(videoPlayer.currentTime);
+            totalDurationEl.textContent = formatTime(duration);
+        } else { // Live stream
+            progressPlayed.style.width = '100%';
+            currentTimeEl.textContent = formatTime(videoPlayer.currentTime);
+            totalDurationEl.textContent = 'LIVE';
+        }
+    };
+    
+    const handleSeek = (e) => {
+        const duration = videoPlayer.duration;
+        if(duration && duration !== Infinity) {
+            const rect = progressContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percentage = clickX / rect.width;
+            videoPlayer.currentTime = percentage * duration;
+        }
+    };
+    
+    const updateVolume = () => {
+        videoPlayer.volume = volumeSlider.value;
+        videoPlayer.muted = (volumeSlider.value == 0);
+    };
+    
+    const updateVolumeIcon = () => {
+        if (videoPlayer.muted || videoPlayer.volume === 0) {
+            volumeIcon.className = 'fas fa-volume-xmark text-xl';
+        } else if (videoPlayer.volume < 0.5) {
+            volumeIcon.className = 'fas fa-volume-low text-xl';
+        } else {
+            volumeIcon.className = 'fas fa-volume-high text-xl';
+        }
+    };
+
+    const toggleMute = () => {
+        videoPlayer.muted = !videoPlayer.muted;
+        if (videoPlayer.muted) {
+            volumeSlider.setAttribute('data-last-volume', volumeSlider.value);
+            volumeSlider.value = 0;
+        } else {
+            volumeSlider.value = volumeSlider.getAttribute('data-last-volume') || 1;
+        }
+        updateVolume();
+        updateVolumeIcon();
+    };
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            playerContainer.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    const updateFullscreenIcon = () => {
+        fullscreenIcon.className = document.fullscreenElement ? 'fas fa-compress text-xl' : 'fas fa-expand text-xl';
+    };
+
+    const showLoading = (isLoading) => {
+        loadingSpinner.style.display = isLoading ? 'block' : 'none';
+        if (isLoading) {
+            playPauseBtnCenter.style.display = 'none';
+        } else if (videoPlayer.paused) {
+            playPauseBtnCenter.style.display = 'flex';
+        }
+    };
+    
+    const hideControls = () => {
+        if (videoPlayer.paused) return;
+        controlsContainer.classList.add('opacity-0');
+        controlsContainer.classList.remove('group-hover:opacity-100');
+    };
+
+    const showControls = () => {
+        controlsContainer.classList.remove('opacity-0');
+        controlsContainer.classList.add('group-hover:opacity-100');
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(hideControls, 4000); // ৪ সেকেন্ড পর কন্ট্রোল হাইড হবে
     };
 
     // --- ইভেন্ট লিসেনার ---
-    playerContainer.addEventListener('click', (e) => {
-        if (e.target === playerContainer || e.target === videoPlayer) {
-            showControls();
-            startHideTimer();
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    playPauseBtnCenter.addEventListener('click', togglePlayPause);
+    videoPlayer.addEventListener('play', updatePlayPauseIcons);
+    videoPlayer.addEventListener('pause', updatePlayPauseIcons);
+    videoPlayer.addEventListener('timeupdate', updateProgress);
+    
+    volumeBtn.addEventListener('click', toggleMute);
+    volumeSlider.addEventListener('input', updateVolume);
+    videoPlayer.addEventListener('volumechange', updateVolumeIcon);
+    
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', updateFullscreenIcon);
+    
+    progressContainer.addEventListener('click', handleSeek);
+
+    videoPlayer.addEventListener('waiting', () => showLoading(true));
+    videoPlayer.addEventListener('playing', () => showLoading(false));
+    videoPlayer.addEventListener('canplay', () => showLoading(false));
+
+    playerContainer.addEventListener('mousemove', showControls);
+    playerContainer.addEventListener('mouseleave', hideControls);
+    
+    // কিবোর্ড শর্টকাট
+    document.addEventListener('keydown', (e) => {
+        switch(e.code) {
+            case 'Space':
+                e.preventDefault();
+                togglePlayPause();
+                break;
+            case 'KeyM':
+                toggleMute();
+                break;
+
+            case 'KeyF':
+                toggleFullscreen();
+                break;
+            case 'ArrowRight':
+                videoPlayer.currentTime += 5;
+                break;
+            case 'ArrowLeft':
+                videoPlayer.currentTime -= 5;
+                break;
         }
     });
 
-    playerContainer.addEventListener('mousemove', () => {
-        showControls();
-        startHideTimer();
-    });
-
-    playerContainer.addEventListener('mouseleave', hideControls);
-
-    playPauseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        togglePlayPause();
-    });
-    
-    videoPlayer.addEventListener('play', () => {
-        updatePlayPauseIcon();
-        startHideTimer();
-    });
-
-    videoPlayer.addEventListener('pause', () => {
-        updatePlayPauseIcon();
-        showControls();
-    });
-
-    videoPlayer.addEventListener('loadeddata', () => {
-        updatePlayPauseIcon();
-        showControls();
-        startHideTimer();
-    });
-
-    server1Btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        switchServer('server1');
-    });
-    server2Btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        switchServer('server2');
-    });
+    // --- প্রাথমিক সেটআপ ---
+    watermarkLogo.src = logoUrl;
+    createServerButtons();
+    initializePlayer(initialServer);
+    updateVolumeIcon();
+    showControls(); // প্রথমে কন্ট্রোল দেখানোর জন্য
+});
 </script>
 
 </body>
