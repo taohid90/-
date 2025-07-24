@@ -1,34 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spider-Man No Way Home(2021)- Full Movie</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Perfect Fullscreen Video Player</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet"/>
     <style>
-        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: #121212; color: #ffffff; }
-        .video-container { width: 100%; background-color: #000; }
-        .main-video-player { width: 100%; height: auto; display: block; background-color: #000; }
-        .description-container { padding: 25px 20px; max-width: 900px; margin: 0 auto; }
-        .description-container h1 { font-size: 2.5em; margin: 0; color: #00e676; }
-        .description-container h2 { font-size: 1.5em; margin-top: 20px; border-bottom: 2px solid #333; padding-bottom: 6px; color: #f5f5f5; }
-        .description-container p { font-size: 1em; line-height: 1.7; margin-top: 12px; color: #cccccc; }
-        @media (max-width: 600px) { .description-container h1 { font-size: 1.8em; } .description-container h2 { font-size: 1.3em; } .description-container p { font-size: 0.95em; } }
+        /* স্মুথ ট্রানজিশনের জন্য কাস্টম স্টাইল */
+        #player-container .controls-overlay, #player-container .watermark-logo {
+            transition: opacity 0.3s ease-in-out;
+        }
+        /* নিশ্চিত করা যে কোনো স্ক্রোলবার দেখা যাবে না */
+        body {
+            overflow: hidden;
+        }
     </style>
 </head>
-<body>
-    <div class="video-container">
-        <video class="main-video-player" controls autoplay >
-            <source src="https://pixeldrain.net/api/file/QX1qVoJD?download" type="video/mp4">
-            Sorry, your browser does not support the video playback.
-        </video>
+<body class="bg-black">
+
+<!-- Main Player Container - now covers the entire screen -->
+<div id="player-container" class="fixed inset-0 w-screen h-screen bg-black flex items-center justify-center">
+    
+    <!-- Video Element - uses object-contain to fit perfectly without cropping -->
+    <video id="videoPlayer" class="w-full h-full object-contain" loop>
+        আপনার ব্রাউজার ভিডিও ট্যাগ সমর্থন করে না।
+    </video>
+
+    <!-- Controls Overlay (এই অংশটি হাইড/শো হবে) -->
+    <div id="controls-overlay" class="absolute inset-0 flex flex-col justify-between opacity-0 pointer-events-none">
+        
+        <!-- Top Controls (Server Selection) -->
+        <div class="p-5 bg-gradient-to-b from-black/50 to-transparent">
+            <div class="flex items-center space-x-3">
+                <button id="server1Btn" class="server-btn bg-white text-black font-bold rounded-full px-4 py-1.5 text-sm shadow-lg transition-all duration-200 pointer-events-auto">
+                    T SPORTS
+                </button>
+                <button id="server2Btn" class="server-btn bg-black/40 text-white backdrop-blur-sm rounded-full px-4 py-1.5 text-sm transition-all duration-200 hover:bg-black/60 pointer-events-auto">
+                    Great family TV
+                </button>
+            </div>
+        </div>
+
+        <!-- Middle Play/Pause Button -->
+        <div class="flex-grow flex items-center justify-center">
+             <button id="playPauseBtn" aria-label="Play/Pause" class="bg-black/40 text-white rounded-full w-20 h-20 flex items-center justify-center text-4xl focus:outline-none backdrop-blur-sm hover:bg-black/60 hover:scale-110 transition-all duration-300 pointer-events-auto">
+                <i id="playPauseIcon" class="fas fa-play"></i>
+            </button>
+        </div>
+
+        <!-- Bottom Spacer (ডিজাইনের ভারসাম্য রাখার জন্য) -->
+        <div class="h-16"></div>
     </div>
-    <div class="description-container">
-        <h1>Spider-man No Way Home (Bangla)</h1>
-        <h2>by: mohammed rafid</h2> 
-        <p style="font-size: 0.95em; color: #999; margin-top: 30px; border-top: 1px solid #333; padding-top: 15px;">
-            <strong>Disclaimer:</strong> The content provided is for informational and entertainment purposes only. All videos belong to their respective copyright owners. We do not claim any ownership.
-        </p>
-    </div>
+
+    <!-- Watermark Logo -->
+    <img id="watermark-logo" src="https://i.ibb.co/3k03bY3/logo-placeholder.png" alt="Logo" class="absolute bottom-5 left-5 h-8 opacity-0 pointer-events-none" />
+
+</div>
+
+<script>
+    // --- আপনার লিংকগুলো এখানে পরিবর্তন করুন ---
+    const videoSources = {
+        server1: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        server2: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+    };
+    const logoUrl = 'https://i.ibb.co/3k03bY3/logo-placeholder.png'; // আপনার লোগোর লিংক
+
+    // --- প্রয়োজনীয় HTML এলিমেন্টগুলো সিলেক্ট করা ---
+    const playerContainer = document.getElementById('player-container');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const controlsOverlay = document.getElementById('controls-overlay');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playPauseIcon = document.getElementById('playPauseIcon');
+    const server1Btn = document.getElementById('server1Btn');
+    const server2Btn = document.getElementById('server2Btn');
+    const watermarkLogo = document.getElementById('watermark-logo');
+    
+    let controlsTimeout;
+
+    // --- প্রাথমিক সেটআপ ---
+    videoPlayer.src = videoSources.server1;
+    watermarkLogo.src = logoUrl;
+
+    // --- ফাংশন ---
+    const showControls = () => {
+        controlsOverlay.classList.remove('opacity-0');
+        watermarkLogo.classList.add('opacity-0');
+        clearTimeout(controlsTimeout);
+    };
+
+    const hideControls = () => {
+        if (!videoPlayer.paused) {
+            controlsOverlay.classList.add('opacity-0');
+            watermarkLogo.classList.remove('opacity-0');
+        }
+    };
+    
+    const startHideTimer = () => {
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(hideControls, 3000); // ৩ সেকেন্ড পর হাইড হবে
+    };
+    
+    const togglePlayPause = () => {
+        if (videoPlayer.paused) {
+            videoPlayer.play();
+        } else {
+            videoPlayer.pause();
+        }
+    };
+
+    const updatePlayPauseIcon = () => {
+        playPauseIcon.className = `fas ${videoPlayer.paused ? 'fa-play' : 'fa-pause'}`;
+    };
+
+    const switchServer = (serverKey) => {
+        videoPlayer.src = videoSources[serverKey];
+        videoPlayer.play();
+        const isActive = 'bg-white text-black font-bold';
+        const isInactive = 'bg-black/40 text-white';
+        server1Btn.className = `server-btn rounded-full px-4 py-1.5 text-sm shadow-lg transition-all duration-200 pointer-events-auto ${serverKey === 'server1' ? isActive : isInactive}`;
+        server2Btn.className = `server-btn rounded-full px-4 py-1.5 text-sm transition-all duration-200 pointer-events-auto ${serverKey === 'server2' ? isActive : isInactive}`;
+    };
+
+    // --- ইভেন্ট লিসেনার ---
+    playerContainer.addEventListener('click', (e) => {
+        if (e.target === playerContainer || e.target === videoPlayer) {
+            showControls();
+            startHideTimer();
+        }
+    });
+
+    playerContainer.addEventListener('mousemove', () => {
+        showControls();
+        startHideTimer();
+    });
+
+    playerContainer.addEventListener('mouseleave', hideControls);
+
+    playPauseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePlayPause();
+    });
+    
+    videoPlayer.addEventListener('play', () => {
+        updatePlayPauseIcon();
+        startHideTimer();
+    });
+
+    videoPlayer.addEventListener('pause', () => {
+        updatePlayPauseIcon();
+        showControls();
+    });
+
+    videoPlayer.addEventListener('loadeddata', () => {
+        updatePlayPauseIcon();
+        showControls();
+        startHideTimer();
+    });
+
+    server1Btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        switchServer('server1');
+    });
+    server2Btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        switchServer('server2');
+    });
+</script>
+
 </body>
 </html>
